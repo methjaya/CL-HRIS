@@ -191,10 +191,10 @@
     <button class="theme-toggle" id="themeBtn" type="button">🌙</button>
   </div>
 
-  <!-- 1. LOGIN / FIRST-TIME REGISTER VIEW -->
+  <!-- 1. LOGIN / INITIAL ACCOUNT SETUP -->
   <div id="authSection">
     <h1>Sign In</h1>
-    <p class="desc">Default setup password is: <b>test123</b></p>
+    <p class="desc">Default setup password: <b>test123</b></p>
     <div id="authNotice" class="status-msg"></div>
 
     <div class="input-group">
@@ -205,14 +205,14 @@
     </div>
   </div>
 
-  <!-- 2. MANDATORY PASSWORD CHANGE VIEW -->
+  <!-- 2. MANDATORY PASSWORD CHANGE SCREEN -->
   <div id="pwdChangeSection" class="hidden">
     <h1>Update Password</h1>
     <p class="desc">You must change your default password to continue.</p>
     <div id="pwdNotice" class="status-msg"></div>
 
     <div class="input-group">
-      <input type="password" id="newPassword" placeholder="Enter new secure password">
+      <input type="password" id="newPassword" placeholder="New secure password">
       <input type="password" id="confirmPassword" placeholder="Confirm new password">
       <button class="btn btn-primary" id="btnUpdatePwd" type="button">Save New Password</button>
     </div>
@@ -273,9 +273,9 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
   const clientDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 3. GEOFENCE CONFIG (6.9072, 79.8498)
-  const OFFICE_LAT = 6.907203859406421;
-  const OFFICE_LNG = 79.84985425058369;
+  // 3. GEOFENCE CONFIG (Updated Coordinates)
+  const OFFICE_LAT = 6.867059730641403;
+  const OFFICE_LNG = 79.90006807607381;
   const MAX_RADIUS_METERS = 200;
   const DEFAULT_PWD = "test123";
 
@@ -357,14 +357,13 @@
     document.getElementById('timerDisplay').innerText = `${hrs}:${mins}:${secs}`;
   }
 
-  // 4. AUTHENTICATION & FIRST-TIME SETUP
+  // 4. AUTHENTICATION HANDLERS
   async function handleRegister() {
     const email = document.getElementById('email').value.trim();
     if (!email) return showMessage('authNotice', "Enter your work email.");
 
     showMessage('authNotice', "Provisioning account...", false);
 
-    // Initial sign-up always assigns the default password
     const { data, error } = await clientDB.auth.signUp({
       email: email,
       password: DEFAULT_PWD
@@ -373,7 +372,7 @@
     if (error) {
       showMessage('authNotice', error.message, true);
     } else {
-      showMessage('authNotice', "Account created! Signing in...", false);
+      showMessage('authNotice', "Account created! Logging in...", false);
       const { error: loginErr } = await clientDB.auth.signInWithPassword({
         email: email,
         password: DEFAULT_PWD
@@ -416,11 +415,9 @@
 
     showMessage('pwdNotice', "Saving password...", false);
 
-    // Update password in Supabase Auth
     const { error: authErr } = await clientDB.auth.updateUser({ password: newPwd });
     if (authErr) return showMessage('pwdNotice', authErr.message, true);
 
-    // Mark password as changed in profile table
     await clientDB.from('profiles').upsert({
       id: currentUser.id,
       email: currentUser.email,
@@ -513,7 +510,6 @@
     if (session) {
       currentUser = session.user;
 
-      // Check if user still needs to update their initial password
       const { data: profile } = await clientDB
         .from('profiles')
         .select('must_change_password')
@@ -523,20 +519,17 @@
       const mustChange = profile ? profile.must_change_password : false;
 
       if (mustChange) {
-        // Enforce mandatory password change screen
         document.getElementById('authSection').classList.add('hidden');
         document.getElementById('dashSection').classList.add('hidden');
         document.getElementById('pwdChangeSection').classList.remove('hidden');
         return;
       }
 
-      // Show Main Punch Dashboard
       document.getElementById('authSection').classList.add('hidden');
       document.getElementById('pwdChangeSection').classList.add('hidden');
       document.getElementById('dashSection').classList.remove('hidden');
       document.getElementById('userGreeting').innerText = `Hi, ${currentUser.email.split('@')[0]}`;
 
-      // Look up any active shift
       const { data: openShift } = await clientDB
         .from('attendance')
         .select('*')
@@ -564,7 +557,7 @@
     }
   }
 
-  // 7. EVENT LISTENERS
+  // 7. ATTACH LISTENERS
   document.getElementById('btnLogin').addEventListener('click', handleLogin);
   document.getElementById('btnRegister').addEventListener('click', handleRegister);
   document.getElementById('btnUpdatePwd').addEventListener('click', handlePasswordUpdate);
