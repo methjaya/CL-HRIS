@@ -3,144 +3,185 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>TimeFlow • Attendance</title>
+  <title>TimeFlow++ • Coding Legends HRIS</title>
 
-  <!-- Apple-Style "CL" SVG Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230071e3'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,SF Pro Display,sans-serif' font-weight='700' font-size='28' fill='%23ffffff' letter-spacing='-1'%3ECL%3C/text%3E%3C/svg%3E">
+  <!-- Apple Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230071e3'/%3E%3Cstop offset='100%25' stop-color='%2364D2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,SF Pro Display,sans-serif' font-weight='700' font-size='26' fill='%23ffffff' letter-spacing='-1'%3ECL%3C/text%3E%3C/svg%3E">
 
-  <!-- Supabase CDN -->
+  <!-- Three.js (3D Ambient Mesh) & Supabase Client -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg: #f5f5f7;
-      --card-bg: rgba(255, 255, 255, 0.85);
+      --bg: #090a0f;
+      --card-bg: rgba(255, 255, 255, 0.72);
+      --card-border: rgba(255, 255, 255, 0.4);
       --text: #1d1d1f;
-      --subtext: #86868b;
+      --text-sub: #86868b;
       --accent: #0071e3;
-      --border: rgba(0, 0, 0, 0.08);
-      --card-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+      --accent-glow: rgba(0, 113, 227, 0.35);
       --danger: #ff3b30;
       --success: #34c759;
       --warning: #ff9500;
-      --input-bg: rgba(120, 120, 128, 0.08);
+      --glass-input: rgba(0, 0, 0, 0.05);
+      --badge-bg: rgba(0, 0, 0, 0.04);
     }
 
     [data-theme="dark"] {
       --bg: #000000;
-      --card-bg: rgba(28, 28, 30, 0.85);
+      --card-bg: rgba(26, 28, 35, 0.68);
+      --card-border: rgba(255, 255, 255, 0.12);
       --text: #f5f5f7;
-      --subtext: #a1a1a6;
+      --text-sub: #a1a1a6;
       --accent: #2997ff;
-      --border: rgba(255, 255, 255, 0.12);
-      --card-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
-      --input-bg: rgba(120, 120, 128, 0.2);
+      --accent-glow: rgba(41, 151, 255, 0.35);
+      --glass-input: rgba(255, 255, 255, 0.08);
+      --badge-bg: rgba(255, 255, 255, 0.08);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
+    
     body {
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 16px;
-      transition: background-color 0.3s ease;
+      overflow-x: hidden;
+      position: relative;
+      padding: 24px 16px;
     }
 
-    .glass-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      box-shadow: var(--card-shadow);
-      padding: 32px 28px;
+    #webgl-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .app-viewport {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 440px;
+      max-width: 1020px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    .top-bar {
+    .glass-panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(40px) saturate(190%);
+      -webkit-backdrop-filter: blur(40px) saturate(190%);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.18);
+      padding: 32px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
       margin-bottom: 24px;
     }
-    .brand-group {
+
+    .brand-mark {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
-    .badge-icon {
-      background: var(--accent);
+
+    .logo-badge {
+      background: linear-gradient(135deg, #0071e3, #64d2ff);
       color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 6px;
-      border-radius: 6px;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 10px;
       letter-spacing: -0.5px;
+      box-shadow: 0 4px 14px var(--accent-glow);
     }
-    .brand { font-weight: 600; font-size: 14px; letter-spacing: -0.2px; }
-    
-    .theme-toggle {
-      background: var(--input-bg);
-      border: 1px solid var(--border);
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: var(--glass-input);
+      border: 1px solid var(--card-border);
       border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      color: var(--text);
+      width: 38px;
+      height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .icon-btn:hover { transform: scale(1.05); }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
+    .btn-secondary { background: var(--glass-input); color: var(--text); border: 1px solid var(--card-border); }
+    .btn-danger { background: var(--danger); color: #fff; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .glass-panel { padding: 24px 18px; }
     }
 
-    h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
-    p.desc { font-size: 14px; color: var(--subtext); margin-top: 4px; }
-
-    .input-group { margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
-    input {
+    .input-box {
       width: 100%;
       padding: 14px 16px;
       border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      background: var(--glass-input);
       color: var(--text);
-      font-size: 16px;
+      font-size: 15px;
       outline: none;
+      transition: border 0.2s ease;
+      margin-bottom: 12px;
     }
-    input:focus { border-color: var(--accent); }
+    .input-box:focus { border-color: var(--accent); }
 
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      border: none;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-secondary { background: var(--input-bg); color: var(--text); }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn:active { transform: scale(0.98); }
-
-    .status-msg {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 12px;
-      display: none;
-      word-break: break-word;
-    }
-    .msg-err { background: rgba(255, 59, 48, 0.15); color: var(--danger); display: block; }
-    .msg-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); display: block; }
-
-    .status-badge {
+    .status-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -148,150 +189,383 @@
       border-radius: 999px;
       font-size: 12px;
       font-weight: 600;
+    }
+    .pill-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+    .pill-bad { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
+    .pill-warn { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
+
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 680px) {
+      .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+    .metric-card {
+      background: var(--badge-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      text-align: left;
+    }
+    .metric-title { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+    .metric-value { font-size: 24px; font-weight: 700; margin-top: 4px; letter-spacing: -0.5px; }
+
+    .clock-display {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      font-variant-numeric: tabular-nums;
+      margin: 18px 0;
+    }
+
+    .table-box {
+      width: 100%;
+      overflow-x: auto;
       margin-top: 12px;
     }
-    .badge-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
-    .badge-error { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
-    .badge-warn { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
-
-    .shift-timer {
-      margin: 16px 0;
-      font-size: 32px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: -0.5px;
-    }
-
-    .table-container { margin-top: 20px; max-height: 220px; overflow-y: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th { color: var(--subtext); padding-bottom: 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
-    td { padding: 10px 0; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-sub); font-weight: 500; padding: 10px 12px; border-bottom: 1px solid var(--card-border); }
+    td { padding: 12px; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
 
-    .tag-9h {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
+    .badge-9h {
+      padding: 3px 8px;
+      border-radius: 6px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
     }
-    .tag-pass { background: rgba(52, 199, 89, 0.15); color: var(--success); }
-    .tag-fail { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
+    .badge-pass { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+    .badge-fail { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
 
     .hidden { display: none !important; }
+    
+    .notice {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+    .notice-err { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
+    .notice-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+
+    .sub-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .sub-tab {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--glass-input);
+      color: var(--text-sub);
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      transition: all 0.2s;
+    }
+    .sub-tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
   </style>
 </head>
-<body data-theme="light">
+<body data-theme="dark">
 
-<div class="glass-card">
-  <div class="top-bar">
-    <div class="brand-group">
-      <span class="badge-icon">CL</span>
-      <span class="brand">TimeFlow</span>
-    </div>
-    <button class="theme-toggle" id="themeBtn" type="button">🌙</button>
-  </div>
+<canvas id="webgl-canvas"></canvas>
 
-  <!-- 1. LOGIN / INITIAL ACCOUNT SETUP -->
-  <div id="authSection">
-    <h1>Sign In</h1>
-    <p class="desc">Default setup password: <b>test123</b></p>
-    <div id="authNotice" class="status-msg"></div>
-
-    <div class="input-group">
-      <input type="email" id="email" placeholder="name@company.com" autocomplete="email">
-      <input type="password" id="password" placeholder="Password (default: test123)" autocomplete="current-password">
-      <button class="btn btn-primary" id="btnLogin" type="button">Sign In</button>
-      <button class="btn btn-secondary" id="btnRegister" type="button">First Time Setup</button>
-    </div>
-  </div>
-
-  <!-- 2. MANDATORY PASSWORD CHANGE SCREEN -->
-  <div id="pwdChangeSection" class="hidden">
-    <h1>Update Password</h1>
-    <p class="desc">You must change your default password to continue.</p>
-    <div id="pwdNotice" class="status-msg"></div>
-
-    <div class="input-group">
-      <input type="password" id="newPassword" placeholder="New secure password">
-      <input type="password" id="confirmPassword" placeholder="Confirm new password">
-      <button class="btn btn-primary" id="btnUpdatePwd" type="button">Save New Password</button>
-    </div>
-  </div>
-
-  <!-- 3. ATTENDANCE DASHBOARD -->
-  <div id="dashSection" class="hidden">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <h1 id="userGreeting">Hi there</h1>
-        <p class="desc" id="geoAccuracy">Locating position...</p>
+<div class="app-viewport">
+  <div class="glass-panel">
+    
+    <!-- NAVIGATION BAR -->
+    <div class="nav-bar">
+      <div class="brand-mark">
+        <span class="logo-badge">CL</span>
+        <div>
+          <div class="brand-title">Coding Legends • HRIS</div>
+          <div style="font-size: 11px; color: var(--text-sub);">Enterprise Attendance & Workforce Engine</div>
+        </div>
       </div>
-      <button class="btn-secondary" id="btnLogout" type="button" style="padding: 6px 12px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer;">Log Out</button>
-    </div>
-
-    <div style="margin: 24px 0; text-align: center;">
-      <div id="locBadge" class="status-badge badge-warn">Verifying Geofence...</div>
-      <div id="timerDisplay" class="shift-timer">00:00:00</div>
-      
-      <div style="display: flex; gap: 10px;">
-        <button id="btnCheckIn" class="btn btn-primary" type="button" disabled>Check In</button>
-        <button id="btnCheckOut" class="btn btn-danger" type="button" disabled>Check Out</button>
+      <div class="nav-actions">
+        <button id="themeToggle" class="icon-btn" title="Toggle Theme">☀️</button>
+        <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 8px 14px; font-size: 12px;">Sign Out</button>
       </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-      <p class="desc" style="font-weight: 600;">Shift History</p>
-      <span style="font-size: 11px; color: var(--subtext);">Standard: 9h/day</span>
+    <!-- 1. AUTHENTICATION MODULE -->
+    <div id="view-auth">
+      <div style="max-width: 380px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">Sign In</h2>
+        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">Permitted domain: @codinglegends.io</p>
+        <div id="authNotice" class="notice hidden"></div>
+
+        <input type="email" id="authEmail" class="input-box" placeholder="name@codinglegends.io" autocomplete="email">
+        <input type="password" id="authPassword" class="input-box" placeholder="Password (default: test123)" autocomplete="current-password">
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+          <button id="loginBtn" class="btn btn-primary" style="width: 100%;">Sign In to Workspace</button>
+          <button id="setupBtn" class="btn btn-secondary" style="width: 100%;">First Time Provisioning</button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-sub); margin-top: 14px;">Authorized Staff: David, Stefan, Azmeer, Vishwa, Sahansa</p>
+      </div>
     </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>In</th>
-            <th>Out</th>
-            <th>Hours</th>
-          </tr>
-        </thead>
-        <tbody id="recordsBody"></tbody>
-      </table>
+    <!-- 2. MANDATORY PASSWORD CHANGE INTERCEPTOR -->
+    <div id="view-pwd-change" class="hidden">
+      <div style="max-width: 380px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">Security Setup</h2>
+        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">Please replace the temporary password (test123) with your confidential master password.</p>
+        <div id="pwdNotice" class="notice hidden"></div>
+
+        <input type="password" id="newMasterPassword" class="input-box" placeholder="New Password (min 6 characters)">
+        <input type="password" id="confirmMasterPassword" class="input-box" placeholder="Confirm New Password">
+
+        <button id="savePwdBtn" class="btn btn-primary" style="width: 100%;">Save Password & Open HRIS</button>
+      </div>
     </div>
+
+    <!-- 3. EMPLOYEE ATTENDANCE DASHBOARD -->
+    <div id="view-employee" class="hidden">
+      <div class="grid-2">
+        
+        <!-- PUNCH INTERFACE -->
+        <div style="text-align: center; border-right: 1px solid var(--card-border); padding-right: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div id="userWelcome" style="font-size: 18px; font-weight: 700;">Employee Portal</div>
+            <div id="geoPill" class="status-pill pill-warn">Checking GPS...</div>
+          </div>
+
+          <div id="activeClock" class="clock-display">00:00:00</div>
+          <div id="distanceMeter" style="font-size: 12px; color: var(--text-sub); margin-bottom: 20px;">Target Perimeter: 200m Office Radius</div>
+
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="checkInBtn" class="btn btn-primary" style="flex: 1;" disabled>Check In</button>
+            <button id="checkOutBtn" class="btn btn-danger" style="flex: 1;" disabled>Check Out</button>
+          </div>
+
+          <!-- USER SELF-SERVICE PASSWORD RESET -->
+          <div style="margin-top: 28px; text-align: left; border-top: 1px solid var(--card-border); padding-top: 18px;">
+            <span style="font-size: 13px; font-weight: 600;">Account Credentials</span>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <input type="password" id="selfNewPassword" class="input-box" placeholder="Update password..." style="margin-bottom: 0;">
+              <button id="selfUpdatePwdBtn" class="btn btn-secondary" style="white-space: nowrap;">Change</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- USER PERSONAL LOGS -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+            <h3 style="font-size: 16px; font-weight: 700;">My Shift History</h3>
+            <span style="font-size: 12px; color: var(--text-sub);">Requirement: 9.00h/day</span>
+          </div>
+
+          <div class="table-box" style="max-height: 320px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>In</th>
+                  <th>Out</th>
+                  <th>Hours</th>
+                </tr>
+              </thead>
+              <tbody id="userShiftLogs"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4. MANAGER & ADMIN METRICS ENGINE -->
+    <div id="view-admin" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size: 22px; font-weight: 700;">Manager Analytics Center</h2>
+          <p style="font-size: 12px; color: var(--text-sub);">Live roster tracking, incomplete workdays, and system credentials</p>
+        </div>
+        <div class="sub-tabs">
+          <button class="sub-tab active" id="tabAnalytics">Workforce Analytics</button>
+          <button class="sub-tab" id="tabSecurity">Staff Security</button>
+        </div>
+      </div>
+
+      <!-- ANALYTICS CARDS -->
+      <div id="adminAnalyticsSection">
+        <div class="metrics-bar">
+          <div class="metric-card">
+            <div class="metric-title">Team Roster</div>
+            <div class="metric-value" id="statStaffCount">5</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">On-Site Today</div>
+            <div class="metric-value" id="statPresentToday" style="color: var(--success);">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Missed Work (Today)</div>
+            <div class="metric-value" id="statAbsentToday" style="color: var(--danger);">5</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Under 9h Shifts</div>
+            <div class="metric-value" id="statUnderhours" style="color: var(--warning);">0</div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 8px;">Company-wide Attendance Registry</h3>
+        <div class="table-box" style="max-height: 280px; overflow-y: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Shift Date</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Total Work</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="adminAttendanceLogs"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STAFF CREDENTIAL MANAGEMENT -->
+      <div id="adminSecuritySection" class="hidden">
+        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Reset Staff Password to Default (test123)</h3>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>System Role</th>
+                <th>Password State</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminRosterList"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </div>
 
 <script>
-  // 1. THEME TOGGLE
-  const themeBtn = document.getElementById('themeBtn');
-  themeBtn.addEventListener('click', () => {
-    const isDark = document.body.getAttribute('data-theme') === 'dark';
-    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeBtn.innerText = isDark ? '🌙' : '☀️';
+  // 1. THREE.JS APPLE-STYLE 3D GLASS ORBS
+  const canvas = document.getElementById('webgl-canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 7;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const orbsGroup = new THREE.Group();
+  scene.add(orbsGroup);
+
+  const orbGeo = new THREE.IcosahedronGeometry(1.8, 32);
+  const orbMat = new THREE.MeshPhysicalMaterial({
+    roughness: 0.1,
+    transmission: 0.85,
+    thickness: 1.2,
+    ior: 1.4,
+    reflectivity: 0.8,
+    clearcoat: 1,
+    clearcoatRoughness: 0.1,
+    color: new THREE.Color(0x0071e3)
   });
 
-  // 2. SUPABASE INITIALIZATION
+  const orb1 = new THREE.Mesh(orbGeo, orbMat);
+  orb1.position.set(-2.5, 1.2, -1);
+  orbsGroup.add(orb1);
+
+  const orbMat2 = orbMat.clone();
+  orbMat2.color = new THREE.Color(0x64d2ff);
+  const orb2 = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, 32), orbMat2);
+  orb2.position.set(2.8, -1.5, 0);
+  orbsGroup.add(orb2);
+
+  const lightTop = new THREE.DirectionalLight(0xffffff, 2);
+  lightTop.position.set(5, 10, 7);
+  scene.add(lightTop);
+
+  const lightFill = new THREE.AmbientLight(0xffffff, 0.8);
+  scene.add(lightFill);
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+    mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  function render3D() {
+    requestAnimationFrame(render3D);
+    orb1.rotation.y += 0.003;
+    orb1.rotation.x += 0.002;
+    orb2.rotation.y -= 0.004;
+    orb2.rotation.x -= 0.003;
+
+    orbsGroup.rotation.y = THREE.MathUtils.lerp(orbsGroup.rotation.y, mouseX * 0.3, 0.05);
+    orbsGroup.rotation.x = THREE.MathUtils.lerp(orbsGroup.rotation.x, mouseY * 0.3, 0.05);
+    renderer.render(scene, camera);
+  }
+  render3D();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // 2. THEME CONTROLLER
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeToggle.innerText = isDark ? '🌙' : '☀️';
+  });
+
+  // 3. BACKEND INITIALIZATION (SUPABASE)
   const SUPABASE_URL = "https://ssxbdhcbhhzqkqrajzin.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
   const clientDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 3. GEOFENCE CONFIG (Updated Coordinates)
+  // 4. BUSINESS & GEOFENCE SPECIFICATIONS
   const OFFICE_LAT = 6.867059730641403;
   const OFFICE_LNG = 79.90006807607381;
   const MAX_RADIUS_METERS = 200;
   const DEFAULT_PWD = "test123";
+  const ALLOWED_STAFF = [
+    'david@codinglegends.io',
+    'stefan@codinglegends.io',
+    'azmeer@codinglegends.io',
+    'vishwa@codinglegends.io',
+    'sahansa@codinglegends.io'
+  ];
 
-  let currentUser = null;
+  let activeSessionUser = null;
   let activeShift = null;
-  let timerInterval = null;
-  let isWithinBounds = false;
+  let clockInterval = null;
+  let isWithinOffice = false;
+  let currentUserCoords = null;
 
-  function showMessage(targetId, text, isError = true) {
-    const box = document.getElementById(targetId);
-    if (!box) return;
-    box.innerText = text;
-    box.className = isError ? "status-msg msg-err" : "status-msg msg-ok";
+  function setNotice(elementId, text, isError = true) {
+    const el = document.getElementById(elementId);
+    el.innerText = text;
+    el.className = isError ? "notice notice-err" : "notice notice-ok";
+    el.classList.remove('hidden');
   }
 
-  function calculateDistance(lat1, lon1, lat2, lon2) {
+  // Haversine Distance Formula
+  function computeMeters(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -301,239 +575,322 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
-  function startLocationWatcher() {
-    if (!navigator.geolocation) {
-      document.getElementById('geoAccuracy').innerText = "GPS not supported on device";
-      return;
-    }
-
+  function startGeofencing() {
+    if (!navigator.geolocation) return;
     navigator.geolocation.watchPosition(
       (pos) => {
-        const coords = pos.coords;
-        const dist = calculateDistance(coords.latitude, coords.longitude, OFFICE_LAT, OFFICE_LNG);
-        const badge = document.getElementById('locBadge');
-        isWithinBounds = dist <= MAX_RADIUS_METERS;
+        currentUserCoords = pos.coords;
+        const dist = computeMeters(pos.coords.latitude, pos.coords.longitude, OFFICE_LAT, OFFICE_LNG);
+        const pill = document.getElementById('geoPill');
+        const meter = document.getElementById('distanceMeter');
+        isWithinOffice = dist <= MAX_RADIUS_METERS;
 
-        document.getElementById('geoAccuracy').innerText = `GPS Accuracy: ±${Math.round(coords.accuracy)}m`;
+        meter.innerText = `Current Distance to Office: ${Math.round(dist)}m (Allowed: ${MAX_RADIUS_METERS}m)`;
 
-        if (isWithinBounds) {
-          badge.className = "status-badge badge-ok";
-          badge.innerText = `● Inside Office (${Math.round(dist)}m)`;
+        if (isWithinOffice) {
+          pill.className = "status-pill pill-ok";
+          pill.innerText = `● In Office (${Math.round(dist)}m)`;
         } else {
-          badge.className = "status-badge badge-error";
-          badge.innerText = `✕ Outside Bounds (${Math.round(dist)}m away)`;
+          pill.className = "status-pill pill-bad";
+          pill.innerText = `✕ Outside Bounds (${Math.round(dist)}m)`;
         }
-        updateButtonStates();
+        syncPunchButtons();
       },
-      (err) => {
-        const badge = document.getElementById('locBadge');
-        badge.className = "status-badge badge-error";
-        badge.innerText = "Location permission blocked";
-        document.getElementById('geoAccuracy').innerText = "Allow location in browser";
+      () => {
+        const pill = document.getElementById('geoPill');
+        pill.className = "status-pill pill-bad";
+        pill.innerText = "GPS Access Denied";
       },
-      { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 8000 }
     );
   }
 
-  function updateButtonStates() {
-    const btnIn = document.getElementById('btnCheckIn');
-    const btnOut = document.getElementById('btnCheckOut');
+  function syncPunchButtons() {
+    const btnIn = document.getElementById('checkInBtn');
+    const btnOut = document.getElementById('checkOutBtn');
 
     if (activeShift) {
       btnIn.disabled = true;
-      btnOut.disabled = !isWithinBounds;
+      btnOut.disabled = !isWithinOffice;
     } else {
-      btnIn.disabled = !isWithinBounds;
+      btnIn.disabled = !isWithinOffice;
       btnOut.disabled = true;
     }
   }
 
-  function updateLiveClock() {
-    if (!activeShift) return;
-    const diff = Math.floor((new Date() - new Date(activeShift.check_in)) / 1000);
-    const hrs = String(Math.floor(diff / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-    const secs = String(diff % 60).padStart(2, '0');
-    document.getElementById('timerDisplay').innerText = `${hrs}:${mins}:${secs}`;
-  }
-
-  // 4. AUTHENTICATION HANDLERS
-  async function handleRegister() {
-    const email = document.getElementById('email').value.trim();
-    if (!email) return showMessage('authNotice', "Enter your work email.");
-
-    showMessage('authNotice', "Provisioning account...", false);
-
-    const { data, error } = await clientDB.auth.signUp({
-      email: email,
-      password: DEFAULT_PWD
-    });
-
-    if (error) {
-      showMessage('authNotice', error.message, true);
-    } else {
-      showMessage('authNotice', "Account created! Logging in...", false);
-      const { error: loginErr } = await clientDB.auth.signInWithPassword({
-        email: email,
-        password: DEFAULT_PWD
-      });
-      if (loginErr) showMessage('authNotice', loginErr.message, true);
-      else checkSession();
+  function renderClock() {
+    if (!activeShift) {
+      document.getElementById('activeClock').innerText = "00:00:00";
+      return;
     }
+    const delta = Math.floor((new Date() - new Date(activeShift.check_in)) / 1000);
+    const hrs = String(Math.floor(delta / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
+    const secs = String(delta % 60).padStart(2, '0');
+    document.getElementById('activeClock').innerText = `${hrs}:${mins}:${secs}`;
   }
 
-  async function handleLogin() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+  // 5. AUTH LOGIC
+  async function performLogin() {
+    const email = document.getElementById('authEmail').value.trim().toLowerCase();
+    const password = document.getElementById('authPassword').value;
 
-    if (!email || !password) return showMessage('authNotice', "Please fill in email and password.");
+    if (!ALLOWED_STAFF.includes(email)) {
+      return setNotice('authNotice', "Access restricted to authorized Coding Legends staff.");
+    }
 
-    showMessage('authNotice', "Signing in...", false);
+    setNotice('authNotice', "Authenticating...", false);
     const { error } = await clientDB.auth.signInWithPassword({ email, password });
+    if (error) setNotice('authNotice', error.message);
+    else verifySession();
+  }
 
-    if (error) {
-      showMessage('authNotice', error.message, true);
-    } else {
-      checkSession();
+  async function performSetup() {
+    const email = document.getElementById('authEmail').value.trim().toLowerCase();
+    if (!ALLOWED_STAFF.includes(email)) {
+      return setNotice('authNotice', "Access restricted to authorized Coding Legends staff.");
+    }
+
+    setNotice('authNotice', "Setting up employee account...", false);
+    const { error } = await clientDB.auth.signUp({ email, password: DEFAULT_PWD });
+    
+    if (error && !error.message.includes("already registered")) {
+      return setNotice('authNotice', error.message);
+    }
+
+    // Auto sign-in with default password
+    const { error: signErr } = await clientDB.auth.signInWithPassword({ email, password: DEFAULT_PWD });
+    if (signErr) setNotice('authNotice', signErr.message);
+    else verifySession();
+  }
+
+  async function saveNewMasterPassword() {
+    const p1 = document.getElementById('newMasterPassword').value;
+    const p2 = document.getElementById('confirmMasterPassword').value;
+
+    if (p1.length < 6) return setNotice('pwdNotice', "Password must be at least 6 characters.");
+    if (p1 === DEFAULT_PWD) return setNotice('pwdNotice', "Cannot reuse default test123.");
+    if (p1 !== p2) return setNotice('pwdNotice', "Passwords do not match.");
+
+    const { error } = await clientDB.auth.updateUser({ password: p1 });
+    if (error) return setNotice('pwdNotice', error.message);
+
+    await clientDB.from('profiles').update({ must_change_password: false }).eq('id', activeSessionUser.id);
+    alert("Password saved securely.");
+    verifySession();
+  }
+
+  async function performSelfPasswordChange() {
+    const pwd = document.getElementById('selfNewPassword').value;
+    if (pwd.length < 6) return alert("Password must be 6+ characters.");
+
+    const { error } = await clientDB.auth.updateUser({ password: pwd });
+    if (error) alert("Error: " + error.message);
+    else {
+      alert("Master password updated successfully.");
+      document.getElementById('selfNewPassword').value = "";
     }
   }
 
-  // 5. MANDATORY PASSWORD UPDATE
-  async function handlePasswordUpdate() {
-    const newPwd = document.getElementById('newPassword').value;
-    const confirmPwd = document.getElementById('confirmPassword').value;
+  // 6. ATTENDANCE ACTIONS
+  async function punchCheckIn() {
+    if (!isWithinOffice) return alert("You must be within 200m of the office location.");
 
-    if (!newPwd || newPwd.length < 6) {
-      return showMessage('pwdNotice', "Password must be at least 6 characters.");
-    }
-    if (newPwd === DEFAULT_PWD) {
-      return showMessage('pwdNotice', "New password cannot be the default test123.");
-    }
-    if (newPwd !== confirmPwd) {
-      return showMessage('pwdNotice', "Passwords do not match.");
-    }
+    const { data, error } = await clientDB.from('attendance').insert([{
+      user_id: activeSessionUser.id,
+      user_email: activeSessionUser.email,
+      check_in: new Date().toISOString(),
+      check_in_lat: currentUserCoords ? currentUserCoords.latitude : null,
+      check_in_lng: currentUserCoords ? currentUserCoords.longitude : null
+    }]).select().single();
 
-    showMessage('pwdNotice', "Saving password...", false);
-
-    const { error: authErr } = await clientDB.auth.updateUser({ password: newPwd });
-    if (authErr) return showMessage('pwdNotice', authErr.message, true);
-
-    await clientDB.from('profiles').upsert({
-      id: currentUser.id,
-      email: currentUser.email,
-      must_change_password: false
-    });
-
-    alert("Password updated successfully! Welcome to TimeFlow.");
-    checkSession();
-  }
-
-  async function signOut() {
-    clearInterval(timerInterval);
-    await clientDB.auth.signOut();
-    checkSession();
-  }
-
-  // 6. ATTENDANCE CLOCK IN / OUT
-  async function punchTime(action) {
-    if (!isWithinBounds) return alert("You must be within 200m of the office location.");
-
-    if (action === 'in') {
-      const { data, error } = await clientDB.from('attendance').insert([{
-        user_id: currentUser.id,
-        user_email: currentUser.email,
-        check_in: new Date().toISOString()
-      }]).select().single();
-
-      if (!error) {
-        activeShift = data;
-        clearInterval(timerInterval);
-        timerInterval = setInterval(updateLiveClock, 1000);
-        updateButtonStates();
-        loadHistory();
-      } else {
-        alert("Check-in error: " + error.message);
-      }
-    } else {
-      const now = new Date();
-      const checkInTime = new Date(activeShift.check_in);
-      const hoursWorked = parseFloat(((now - checkInTime) / 36e5).toFixed(2));
-
-      const { error } = await clientDB.from('attendance').update({
-        check_out: now.toISOString(),
-        work_hours: hoursWorked
-      }).eq('id', activeShift.id);
-
-      if (!error) {
-        activeShift = null;
-        clearInterval(timerInterval);
-        document.getElementById('timerDisplay').innerText = "00:00:00";
-        updateButtonStates();
-        loadHistory();
-      } else {
-        alert("Check-out error: " + error.message);
-      }
+    if (!error) {
+      activeShift = data;
+      clearInterval(clockInterval);
+      clockInterval = setInterval(renderClock, 1000);
+      syncPunchButtons();
+      loadUserLogs();
     }
   }
 
-  async function loadHistory() {
+  async function punchCheckOut() {
+    if (!isWithinOffice) return alert("You must be on-site to check out.");
+
+    const now = new Date();
+    const diffHours = parseFloat(((now - new Date(activeShift.check_in)) / 36e5).toFixed(2));
+    const is9h = diffHours >= 9.0;
+
+    const { error } = await clientDB.from('attendance').update({
+      check_out: now.toISOString(),
+      work_hours: diffHours,
+      completed_9h: is9h
+    }).eq('id', activeShift.id);
+
+    if (!error) {
+      activeShift = null;
+      clearInterval(clockInterval);
+      document.getElementById('activeClock').innerText = "00:00:00";
+      syncPunchButtons();
+      loadUserLogs();
+    }
+  }
+
+  async function loadUserLogs() {
     const { data } = await clientDB.from('attendance')
       .select('*')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', activeSessionUser.id)
       .order('check_in', { ascending: false });
 
-    const tbody = document.getElementById('recordsBody');
+    const tbody = document.getElementById('userShiftLogs');
     tbody.innerHTML = '';
-
     data?.forEach(row => {
-      const inDate = new Date(row.check_in);
-      const outDate = row.check_out ? new Date(row.check_out) : null;
-      const isComplete9h = row.work_hours >= 9;
-
+      const inD = new Date(row.check_in);
+      const outD = row.check_out ? new Date(row.check_out) : null;
       tbody.innerHTML += `
         <tr>
-          <td>${inDate.toLocaleDateString([], { month: 'short', day: 'numeric' })}</td>
-          <td>${inDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-          <td>${outDate ? outDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</td>
+          <td>${inD.toLocaleDateString([], { month: 'short', day: 'numeric' })}</td>
+          <td>${inD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+          <td>${outD ? outD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</td>
           <td>
             ${row.work_hours 
-              ? `<span class="tag-9h ${isComplete9h ? 'tag-pass' : 'tag-fail'}">${row.work_hours}h</span>` 
-              : '<span style="color:var(--accent)">Active</span>'}
+              ? `<span class="badge-9h ${row.completed_9h ? 'badge-pass' : 'badge-fail'}">${row.work_hours}h</span>`
+              : '<span style="color:var(--accent);">In Progress</span>'}
           </td>
         </tr>`;
     });
   }
 
-  async function checkSession() {
-    const { data: { session } } = await clientDB.auth.getSession();
-    
-    if (session) {
-      currentUser = session.user;
+  // 7. MANAGER ANALYTICS MODULE
+  async function loadAdminSuite() {
+    const { data: allAttendance } = await clientDB.from('attendance').select('*').order('check_in', { ascending: false });
+    const { data: roster } = await clientDB.from('roster').select('*');
+    const { data: profiles } = await clientDB.from('profiles').select('*');
 
-      const { data: profile } = await clientDB
-        .from('profiles')
-        .select('must_change_password')
-        .eq('id', currentUser.id)
-        .maybeSingle();
+    // Metrics Calculations
+    const todayStr = new Date().toISOString().split('T')[0];
+    const presentTodaySet = new Set();
+    let underhoursCount = 0;
 
-      const mustChange = profile ? profile.must_change_password : false;
-
-      if (mustChange) {
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('dashSection').classList.add('hidden');
-        document.getElementById('pwdChangeSection').classList.remove('hidden');
-        return;
+    allAttendance?.forEach(r => {
+      if (r.check_in.startsWith(todayStr)) {
+        presentTodaySet.add(r.user_email);
       }
+      if (r.work_hours && r.work_hours < 9.0) {
+        underhoursCount++;
+      }
+    });
 
-      document.getElementById('authSection').classList.add('hidden');
-      document.getElementById('pwdChangeSection').classList.add('hidden');
-      document.getElementById('dashSection').classList.remove('hidden');
-      document.getElementById('userGreeting').innerText = `Hi, ${currentUser.email.split('@')[0]}`;
+    const totalStaff = ALLOWED_STAFF.length;
+    const presentCount = presentTodaySet.size;
+    const absentCount = Math.max(0, totalStaff - presentCount);
 
-      const { data: openShift } = await clientDB
-        .from('attendance')
+    document.getElementById('statStaffCount').innerText = totalStaff;
+    document.getElementById('statPresentToday').innerText = presentCount;
+    document.getElementById('statAbsentToday').innerText = absentCount;
+    document.getElementById('statUnderhours').innerText = underhoursCount;
+
+    // Populate Company Attendance Registry
+    const logBody = document.getElementById('adminAttendanceLogs');
+    logBody.innerHTML = '';
+    allAttendance?.forEach(log => {
+      const inD = new Date(log.check_in);
+      const outD = log.check_out ? new Date(log.check_out) : null;
+      logBody.innerHTML += `
+        <tr>
+          <td><b>${log.user_email.split('@')[0]}</b></td>
+          <td>${inD.toLocaleDateString([], { month: 'short', day: 'numeric' })}</td>
+          <td>${inD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+          <td>${outD ? outD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</td>
+          <td>${log.work_hours ? log.work_hours + 'h' : 'Active'}</td>
+          <td>
+            ${log.work_hours 
+              ? (log.completed_9h ? '<span class="status-pill pill-ok">Met (9h+)</span>' : '<span class="status-pill pill-bad">Under Hours</span>')
+              : '<span class="status-pill pill-warn">On Premise</span>'}
+          </td>
+        </tr>`;
+    });
+
+    // Populate Staff Credentials Table
+    const rosterBody = document.getElementById('adminRosterList');
+    rosterBody.innerHTML = '';
+    ALLOWED_STAFF.forEach(email => {
+      const profile = profiles?.find(p => p.email === email);
+      const mustChange = profile ? profile.must_change_password : true;
+      rosterBody.innerHTML += `
+        <tr>
+          <td><b>${email}</b></td>
+          <td>${['david@codinglegends.io', 'stefan@codinglegends.io'].includes(email) ? 'Manager / Admin' : 'Employee'}</td>
+          <td>${mustChange ? '<span class="status-pill pill-warn">Default Key</span>' : '<span class="status-pill pill-ok">Custom Secure</span>'}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 11px;" onclick="adminResetPassword('${email}')">
+              Reset to test123
+            </button>
+          </td>
+        </tr>`;
+    });
+  }
+
+  window.adminResetPassword = async function(email) {
+    if (!confirm(`Are you sure you want to reset password for ${email}?`)) return;
+    await clientDB.from('profiles').update({ must_change_password: true }).eq('email', email);
+    alert(`Password reset trigger flagged for ${email}. Staff member will be prompted to reset upon entry.`);
+    loadAdminSuite();
+  };
+
+  // 8. SESSION CONTROLLER
+  async function verifySession() {
+    const { data: { session } } = await clientDB.auth.getSession();
+
+    const viewAuth = document.getElementById('view-auth');
+    const viewPwd = document.getElementById('view-pwd-change');
+    const viewEmp = document.getElementById('view-employee');
+    const viewAdm = document.getElementById('view-admin');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (!session) {
+      activeSessionUser = null;
+      activeShift = null;
+      clearInterval(clockInterval);
+      viewAuth.classList.remove('hidden');
+      viewPwd.classList.add('hidden');
+      viewEmp.classList.add('hidden');
+      viewAdm.classList.add('hidden');
+      logoutBtn.classList.add('hidden');
+      return;
+    }
+
+    activeSessionUser = session.user;
+    logoutBtn.classList.remove('hidden');
+
+    const { data: profile } = await clientDB.from('profiles').select('*').eq('id', activeSessionUser.id).maybeSingle();
+
+    // Intercept with Password Change if required
+    if (profile && profile.must_change_password) {
+      viewAuth.classList.add('hidden');
+      viewEmp.classList.add('hidden');
+      viewAdm.classList.add('hidden');
+      viewPwd.classList.remove('hidden');
+      return;
+    }
+
+    viewAuth.classList.add('hidden');
+    viewPwd.classList.add('hidden');
+
+    const isAdmin = ['david@codinglegends.io', 'stefan@codinglegends.io'].includes(activeSessionUser.email);
+
+    if (isAdmin) {
+      viewEmp.classList.add('hidden');
+      viewAdm.classList.remove('hidden');
+      loadAdminSuite();
+    } else {
+      viewAdm.classList.add('hidden');
+      viewEmp.classList.remove('hidden');
+      document.getElementById('userWelcome').innerText = `Staff: ${activeSessionUser.email.split('@')[0]}`;
+      
+      // Load Open Shift
+      const { data: openShift } = await clientDB.from('attendance')
         .select('*')
-        .eq('user_id', currentUser.id)
+        .eq('user_id', activeSessionUser.id)
         .is('check_out', null)
         .order('check_in', { ascending: false })
         .limit(1)
@@ -541,31 +898,43 @@
 
       if (openShift) {
         activeShift = openShift;
-        clearInterval(timerInterval);
-        timerInterval = setInterval(updateLiveClock, 1000);
+        clearInterval(clockInterval);
+        clockInterval = setInterval(renderClock, 1000);
       }
 
-      startLocationWatcher();
-      loadHistory();
-    } else {
-      currentUser = null;
-      activeShift = null;
-      clearInterval(timerInterval);
-      document.getElementById('authSection').classList.remove('hidden');
-      document.getElementById('pwdChangeSection').classList.add('hidden');
-      document.getElementById('dashSection').classList.add('hidden');
+      startGeofencing();
+      loadUserLogs();
     }
   }
 
-  // 7. ATTACH LISTENERS
-  document.getElementById('btnLogin').addEventListener('click', handleLogin);
-  document.getElementById('btnRegister').addEventListener('click', handleRegister);
-  document.getElementById('btnUpdatePwd').addEventListener('click', handlePasswordUpdate);
-  document.getElementById('btnLogout').addEventListener('click', signOut);
-  document.getElementById('btnCheckIn').addEventListener('click', () => punchTime('in'));
-  document.getElementById('btnCheckOut').addEventListener('click', () => punchTime('out'));
+  // 9. EVENT REGISTRATION
+  document.getElementById('loginBtn').addEventListener('click', performLogin);
+  document.getElementById('setupBtn').addEventListener('click', performSetup);
+  document.getElementById('savePwdBtn').addEventListener('click', saveNewMasterPassword);
+  document.getElementById('selfUpdatePwdBtn').addEventListener('click', performSelfPasswordChange);
+  document.getElementById('checkInBtn').addEventListener('click', punchCheckIn);
+  document.getElementById('checkOutBtn').addEventListener('click', punchCheckOut);
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await clientDB.auth.signOut();
+    verifySession();
+  });
 
-  checkSession();
+  // Admin Sub Tabs
+  document.getElementById('tabAnalytics').addEventListener('click', () => {
+    document.getElementById('tabAnalytics').classList.add('active');
+    document.getElementById('tabSecurity').classList.remove('active');
+    document.getElementById('adminAnalyticsSection').classList.remove('hidden');
+    document.getElementById('adminSecuritySection').classList.add('hidden');
+  });
+
+  document.getElementById('tabSecurity').addEventListener('click', () => {
+    document.getElementById('tabSecurity').classList.add('active');
+    document.getElementById('tabAnalytics').classList.remove('active');
+    document.getElementById('adminSecuritySection').classList.remove('hidden');
+    document.getElementById('adminAnalyticsSection').classList.add('hidden');
+  });
+
+  verifySession();
 </script>
 </body>
 </html>
