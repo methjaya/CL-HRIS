@@ -3,1087 +3,518 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>TimeFlow • Coding Legends HRIS</title>
+  <title>TimeFlow • Coding Legends</title>
 
-  <!-- Apple Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230071e3'/%3E%3Cstop offset='100%25' stop-color='%2364D2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,SF Pro Display,sans-serif' font-weight='700' font-size='26' fill='%23ffffff' letter-spacing='-1'%3ECL%3C/text%3E%3C/svg%3E">
-
-  <!-- Three.js (3D Ambient Mesh) & Supabase Client -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230071e3'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,sans-serif' font-weight='700' font-size='26' fill='%23ffffff'%3ECL%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg: #090a0f;
-      --card-bg: rgba(255, 255, 255, 0.72);
-      --card-border: rgba(255, 255, 255, 0.4);
+      --bg: #f5f5f7;
+      --card-bg: #ffffff;
       --text: #1d1d1f;
-      --text-sub: #86868b;
+      --subtext: #86868b;
+      --border: rgba(0, 0, 0, 0.08);
       --accent: #0071e3;
-      --accent-glow: rgba(0, 113, 227, 0.35);
       --danger: #ff3b30;
       --success: #34c759;
       --warning: #ff9500;
-      --glass-input: rgba(0, 0, 0, 0.05);
-      --badge-bg: rgba(0, 0, 0, 0.04);
+      --input-bg: #f5f5f7;
+      --segmented-bg: rgba(118, 118, 128, 0.12);
     }
 
     [data-theme="dark"] {
       --bg: #000000;
-      --card-bg: rgba(26, 28, 35, 0.68);
-      --card-border: rgba(255, 255, 255, 0.12);
+      --card-bg: #1c1c1e;
       --text: #f5f5f7;
-      --text-sub: #a1a1a6;
+      --subtext: #8e8e93;
+      --border: rgba(255, 255, 255, 0.12);
       --accent: #2997ff;
-      --accent-glow: rgba(41, 151, 255, 0.35);
-      --glass-input: rgba(255, 255, 255, 0.08);
-      --badge-bg: rgba(255, 255, 255, 0.08);
+      --input-bg: #2c2c2e;
+      --segmented-bg: rgba(118, 118, 128, 0.24);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px; transition: background 0.2s; }
     
-    body {
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow-x: hidden;
-      position: relative;
-      padding: 24px 16px;
-    }
+    .container { width: 100%; max-width: 820px; }
+    .card { background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 16px; }
 
-    #webgl-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+    .badge { background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; }
 
-    .app-viewport {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 1060px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    .segmented-control { display: inline-flex; background: var(--segmented-bg); padding: 3px; border-radius: 9px; gap: 2px; }
+    .segmented-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--subtext); cursor: pointer; }
+    .segmented-btn.active { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
 
-    .glass-panel {
-      background: var(--card-bg);
-      backdrop-filter: blur(40px) saturate(190%);
-      -webkit-backdrop-filter: blur(40px) saturate(190%);
-      border: 1px solid var(--card-border);
-      border-radius: 28px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.18);
-      padding: 32px;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .nav-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--card-border);
-      margin-bottom: 24px;
-    }
-
-    .brand-mark {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-badge {
-      background: linear-gradient(135deg, #0071e3, #64d2ff);
-      color: #fff;
-      font-weight: 800;
-      font-size: 13px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      letter-spacing: -0.5px;
-      box-shadow: 0 4px 14px var(--accent-glow);
-    }
-
-    .brand-title {
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .icon-btn {
-      background: var(--glass-input);
-      border: 1px solid var(--card-border);
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--text);
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-    .icon-btn:hover { transform: scale(1.05); }
-
-    .btn {
-      padding: 12px 20px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
-    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
-    .btn-secondary { background: var(--glass-input); color: var(--text); border: 1px solid var(--card-border); }
+    .btn { padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .btn:active { opacity: 0.7; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--segmented-bg); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-    @media (max-width: 768px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .glass-panel { padding: 24px 18px; }
-    }
-
-    .input-box {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--card-border);
-      background: var(--glass-input);
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-      transition: border 0.2s ease;
-      margin-bottom: 12px;
-    }
+    .input-box { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 14px; outline: none; margin-bottom: 10px; }
     .input-box:focus { border-color: var(--accent); }
 
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    .timer { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; margin: 12px 0; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
     .pill-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
     .pill-bad { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
     .pill-warn { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
 
-    .metrics-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    @media (max-width: 680px) {
-      .metrics-bar { grid-template-columns: repeat(2, 1fr); }
-    }
-    .metric-card {
-      background: var(--badge-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 16px;
-      text-align: left;
-    }
-    .metric-title { font-size: 12px; color: var(--text-sub); font-weight: 500; }
-    .metric-value { font-size: 24px; font-weight: 700; margin-top: 4px; letter-spacing: -0.5px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    @media(max-width: 600px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    .stat-box { background: var(--input-bg); padding: 12px; border-radius: 12px; }
+    .stat-title { font-size: 11px; color: var(--subtext); }
+    .stat-num { font-size: 20px; font-weight: 700; margin-top: 4px; }
 
-    .clock-display {
-      font-size: 48px;
-      font-weight: 800;
-      letter-spacing: -1.5px;
-      font-variant-numeric: tabular-nums;
-      margin: 18px 0;
-    }
-
-    .table-box {
-      width: 100%;
-      overflow-x: auto;
-      margin-top: 12px;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th { color: var(--text-sub); font-weight: 500; padding: 10px 12px; border-bottom: 1px solid var(--card-border); }
-    td { padding: 12px; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
-
-    .badge-9h {
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .badge-pass { background: rgba(52, 199, 89, 0.15); color: var(--success); }
-    .badge-fail { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th { text-align: left; color: var(--subtext); padding: 8px 10px; font-weight: 500; border-bottom: 1px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--border); }
 
     .hidden { display: none !important; }
-    
-    .notice {
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.4;
-      margin-bottom: 16px;
-    }
-    .notice-err { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
-    .notice-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
-
-    .sub-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .sub-tab {
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      background: var(--glass-input);
-      color: var(--text-sub);
-      cursor: pointer;
-      border: 1px solid var(--card-border);
-      transition: all 0.2s;
-    }
-    .sub-tab.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-    }
+    .notice { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+    .notice-err { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
   </style>
 </head>
-<body data-theme="dark">
+<body data-theme="light">
 
-<canvas id="webgl-canvas"></canvas>
-
-<div class="app-viewport">
-  <div class="glass-panel">
-    
-    <!-- NAVIGATION BAR -->
-    <div class="nav-bar">
-      <div class="brand-mark">
-        <span class="logo-badge">CL</span>
-        <div>
-          <div class="brand-title">Coding Legends • HRIS</div>
-          <div style="font-size: 11px; color: var(--text-sub);">Enterprise Attendance & Workforce Engine</div>
-        </div>
+<div class="container">
+  <div class="card">
+    <div class="header">
+      <div class="brand">
+        <span class="badge">CL</span>
+        <span>Coding Legends</span>
       </div>
-      <div class="nav-actions">
-        <!-- Admin Dashboard Switcher Tab -->
-        <div id="adminViewSwitcher" class="hidden" style="display: flex; gap: 6px; margin-right: 12px;">
-          <button id="switchPunchViewBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">My Punch Clock</button>
-          <button id="switchAdminViewBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Admin Suite</button>
-        </div>
-        <button id="themeToggle" class="icon-btn" title="Toggle Theme">☀️</button>
-        <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 8px 14px; font-size: 12px;">Sign Out</button>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="themeToggle" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">☀️</button>
+        <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 6px 12px; font-size: 12px;">Sign Out</button>
       </div>
     </div>
 
-    <!-- 1. AUTHENTICATION MODULE -->
-    <div id="view-auth">
-      <div style="max-width: 380px; margin: 0 auto; text-align: center;">
-        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">Sign In</h2>
-        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">Permitted domain: @codinglegends.io</p>
-        <div id="authNotice" class="notice hidden"></div>
+    <!-- VIEW 1: AUTH -->
+    <div id="view-auth" style="max-width: 320px; margin: 20px auto; text-align: center;">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Sign In</h2>
+      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Default password: test123</p>
+      <div id="authNotice" class="notice notice-err hidden"></div>
 
-        <input type="email" id="authEmail" class="input-box" placeholder="name@codinglegends.io" autocomplete="email">
-        <input type="password" id="authPassword" class="input-box" placeholder="Password (default: test123)" autocomplete="current-password">
+      <input type="email" id="authEmail" class="input-box" placeholder="name@codinglegends.io">
+      <input type="password" id="authPassword" class="input-box" placeholder="Password">
 
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-          <button id="loginBtn" class="btn btn-primary" style="width: 100%;">Sign In to Workspace</button>
-          <button id="setupBtn" class="btn btn-secondary" style="width: 100%;">First Time Provisioning</button>
-        </div>
-        <p style="font-size: 12px; color: var(--text-sub); margin-top: 14px;">Administrators: David, Stefan, Azmeer, Vishwa, Sahansa</p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="loginBtn" class="btn btn-primary">Sign In</button>
+        <button id="setupBtn" class="btn btn-secondary">First-Time Setup</button>
       </div>
     </div>
 
-    <!-- 2. MANDATORY PASSWORD CHANGE INTERCEPTOR -->
-    <div id="view-pwd-change" class="hidden">
-      <div style="max-width: 380px; margin: 0 auto; text-align: center;">
-        <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 6px;">Security Setup</h2>
-        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">Please replace the temporary password (test123) with your confidential master password.</p>
-        <div id="pwdNotice" class="notice hidden"></div>
+    <!-- VIEW 2: PASSWORD CHANGE -->
+    <div id="view-pwd" class="hidden" style="max-width: 320px; margin: 20px auto; text-align: center;">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Update Password</h2>
+      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Set a new password to continue.</p>
+      <div id="pwdNotice" class="notice notice-err hidden"></div>
 
-        <input type="password" id="newMasterPassword" class="input-box" placeholder="New Password (min 6 characters)">
-        <input type="password" id="confirmMasterPassword" class="input-box" placeholder="Confirm New Password">
-
-        <button id="savePwdBtn" class="btn btn-primary" style="width: 100%;">Save Password & Open HRIS</button>
-      </div>
+      <input type="password" id="newPwd1" class="input-box" placeholder="New password">
+      <input type="password" id="newPwd2" class="input-box" placeholder="Confirm password">
+      <button id="savePwdBtn" class="btn btn-primary" style="width: 100%;">Save Password</button>
     </div>
 
-    <!-- 3. ATTENDANCE DASHBOARD (EMPLOYEE & ADMIN SELF-PUNCH) -->
-    <div id="view-employee" class="hidden">
-      <div class="grid-2">
-        
-        <!-- PUNCH INTERFACE -->
-        <div style="text-align: center; border-right: 1px solid var(--card-border); padding-right: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div id="userWelcome" style="font-size: 18px; font-weight: 700;">Punch Portal</div>
-            <div id="geoPill" class="status-pill pill-warn">Checking GPS...</div>
-          </div>
-
-          <div id="activeClock" class="clock-display">00:00:00</div>
-          <div id="distanceMeter" style="font-size: 12px; color: var(--text-sub); margin-bottom: 20px;">Target Perimeter: 200m Office Radius</div>
-
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <button id="checkInBtn" class="btn btn-primary" style="flex: 1;" disabled>Check In</button>
-            <button id="checkOutBtn" class="btn btn-danger" style="flex: 1;" disabled>Check Out</button>
-          </div>
-
-          <!-- USER SELF-SERVICE PASSWORD RESET -->
-          <div style="margin-top: 28px; text-align: left; border-top: 1px solid var(--card-border); padding-top: 18px;">
-            <span style="font-size: 13px; font-weight: 600;">Account Credentials</span>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <input type="password" id="selfNewPassword" class="input-box" placeholder="Update personal password..." style="margin-bottom: 0;">
-              <button id="selfUpdatePwdBtn" class="btn btn-secondary" style="white-space: nowrap;">Change</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- USER PERSONAL LOGS -->
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
-            <h3 style="font-size: 16px; font-weight: 700;">Personal Shift History</h3>
-            <span style="font-size: 12px; color: var(--text-sub);">Requirement: 9.00h/day</span>
-          </div>
-
-          <div class="table-box" style="max-height: 320px; overflow-y: auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>In</th>
-                  <th>Out</th>
-                  <th>Hours</th>
-                </tr>
-              </thead>
-              <tbody id="userShiftLogs"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 4. MANAGER & ADMIN METRICS ENGINE -->
-    <div id="view-admin" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <h2 style="font-size: 22px; font-weight: 700;">Admin & Analytics Suite</h2>
-          <p style="font-size: 12px; color: var(--text-sub);">Live roster tracking, incomplete workdays, credential overrides</p>
-        </div>
-        <div class="sub-tabs">
-          <button class="sub-tab active" id="tabAnalytics">Workforce Analytics</button>
-          <button class="sub-tab" id="tabSecurity">Staff Security</button>
-          <!-- Special Superuser Tab (Only visible to sahansa@codinglegends.io) -->
-          <button class="sub-tab hidden" id="tabManualEdit" style="border-color: var(--accent); color: var(--accent);">Manual Time Edit (Sahansa)</button>
+    <!-- VIEW 3: MAIN APP INTERFACE -->
+    <div id="view-main" class="hidden">
+      <!-- Role Navigation Switches -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+        <div id="userTag" style="font-size: 13px; font-weight: 600;"></div>
+        <div class="segmented-control" id="navTabs">
+          <button class="segmented-btn active" id="tabPunch">Punch Clock</button>
+          <button class="segmented-btn hidden" id="tabAnalytics">Analytics</button>
+          <button class="segmented-btn hidden" id="tabHehe">HEHE</button>
         </div>
       </div>
 
-      <!-- ANALYTICS CARDS -->
-      <div id="adminAnalyticsSection">
-        <div class="metrics-bar">
-          <div class="metric-card">
-            <div class="metric-title">Team Roster</div>
-            <div class="metric-value" id="statStaffCount">5</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-title">On-Site Today</div>
-            <div class="metric-value" id="statPresentToday" style="color: var(--success);">0</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-title">Missed Work (Today)</div>
-            <div class="metric-value" id="statAbsentToday" style="color: var(--danger);">5</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-title">Under 9h Shifts</div>
-            <div class="metric-value" id="statUnderhours" style="color: var(--warning);">0</div>
+      <!-- TAB: PUNCH CLOCK -->
+      <div id="section-punch">
+        <div style="text-align: center; padding: 20px 0;">
+          <div id="geoPill" class="pill pill-warn">Checking location...</div>
+          <div id="timer" class="timer">00:00:00</div>
+          <div id="geoDist" style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">Office Radius: 200m</div>
+
+          <div style="display: flex; gap: 10px; justify-content: center; max-width: 320px; margin: 0 auto;">
+            <button id="btnIn" class="btn btn-primary" style="flex: 1;" disabled>Check In</button>
+            <button id="btnOut" class="btn btn-danger" style="flex: 1;" disabled>Check Out</button>
           </div>
         </div>
 
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 8px;">Company-wide Attendance Registry</h3>
-        <div class="table-box" style="max-height: 280px; overflow-y: auto;">
+        <h3 style="font-size: 14px; font-weight: 600; margin-top: 24px;">Recent Logs</h3>
+        <div style="overflow-x: auto;">
           <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Shift Date</th>
-                <th>Check In</th>
-                <th>Check Out</th>
-                <th>Total Work</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="adminAttendanceLogs"></tbody>
+            <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Hours</th></tr></thead>
+            <tbody id="myLogs"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- STAFF CREDENTIAL MANAGEMENT -->
-      <div id="adminSecuritySection" class="hidden">
-        <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Reset Staff Password to Default (test123)</h3>
-        <div class="table-box">
+      <!-- TAB: ANALYTICS (ADMINS) -->
+      <div id="section-analytics" class="hidden">
+        <div class="grid-4">
+          <div class="stat-box"><div class="stat-title">Roster</div><div class="stat-num" id="statTotal">5</div></div>
+          <div class="stat-box"><div class="stat-title">Present Today</div><div class="stat-num" id="statPresent" style="color:var(--success);">0</div></div>
+          <div class="stat-box"><div class="stat-title">Absent Today</div><div class="stat-num" id="statAbsent" style="color:var(--danger);">5</div></div>
+          <div class="stat-box"><div class="stat-title">&lt; 9h Shifts</div><div class="stat-num" id="statUnder" style="color:var(--warning);">0</div></div>
+        </div>
+
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Staff Log History</h3>
+        <div style="overflow-x: auto; max-height: 280px;">
           <table>
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>System Role</th>
-                <th>Password State</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="adminRosterList"></tbody>
+            <thead><tr><th>Staff</th><th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Status</th></tr></thead>
+            <tbody id="companyLogs"></tbody>
+          </table>
+        </div>
+
+        <h3 style="font-size: 14px; font-weight: 600; margin: 24px 0 8px 0;">Reset Passwords</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead><tr><th>Staff</th><th>Role</th><th>Action</th></tr></thead>
+            <tbody id="rosterList"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 5. MANUAL EDIT SECTION: ONLY SAHANSA@CODINGLEGENDS.IO HAS WRITE PERMISSION -->
-      <div id="adminManualEditSection" class="hidden">
-        <div style="background: var(--badge-bg); border: 1px solid var(--accent); border-radius: 18px; padding: 20px; margin-bottom: 20px;">
-          <h3 style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 4px;">Superuser Manual Time Override</h3>
-          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">
-            Notice: Only authorized to <b>sahansa@codinglegends.io</b>. Direct database timestamp adjustment.
-          </p>
+      <!-- TAB: HEHE (SAHANSA ONLY) -->
+      <div id="section-hehe" class="hidden">
+        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">HEHE</h3>
+        <p style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">Manual timestamp adjustment workspace.</p>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-            <div>
-              <label style="font-size: 12px; color: var(--text-sub);">Select Employee Shift</label>
-              <select id="editShiftSelect" class="input-box" style="margin-top: 4px;"></select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: var(--text-sub);">Adjust Check-In (Local ISO)</label>
-              <input type="datetime-local" id="manualCheckInInput" class="input-box" placeholder="[Superuser: Sahansa Only] check-in override" style="margin-top: 4px;">
-            </div>
-            <div>
-              <label style="font-size: 12px; color: var(--text-sub);">Adjust Check-Out (Local ISO)</label>
-              <input type="datetime-local" id="manualCheckOutInput" class="input-box" placeholder="[Superuser: Sahansa Only] check-out override" style="margin-top: 4px;">
-            </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
+          <div>
+            <label style="font-size: 12px; color: var(--subtext);">Select Shift</label>
+            <select id="heheShiftSelect" class="input-box"></select>
           </div>
-
-          <button id="btnSubmitManualEdit" class="btn btn-primary" style="margin-top: 8px;">
-            Commit Manual Timestamp Adjustment
-          </button>
+          <div>
+            <label style="font-size: 12px; color: var(--subtext);">Check In Time</label>
+            <input type="datetime-local" id="heheIn" class="input-box">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--subtext);">Check Out Time</label>
+            <input type="datetime-local" id="heheOut" class="input-box">
+          </div>
+          <button id="heheSave" class="btn btn-primary">Save Adjustment</button>
         </div>
       </div>
 
     </div>
-
   </div>
 </div>
 
 <script>
-  // 1. THREE.JS APPLE-STYLE 3D GLASS ORBS
-  const canvas = document.getElementById('webgl-canvas');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 7;
-
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  const orbsGroup = new THREE.Group();
-  scene.add(orbsGroup);
-
-  const orbGeo = new THREE.IcosahedronGeometry(1.8, 32);
-  const orbMat = new THREE.MeshPhysicalMaterial({
-    roughness: 0.1,
-    transmission: 0.85,
-    thickness: 1.2,
-    ior: 1.4,
-    reflectivity: 0.8,
-    clearcoat: 1,
-    clearcoatRoughness: 0.1,
-    color: new THREE.Color(0x0071e3)
-  });
-
-  const orb1 = new THREE.Mesh(orbGeo, orbMat);
-  orb1.position.set(-2.5, 1.2, -1);
-  orbsGroup.add(orb1);
-
-  const orbMat2 = orbMat.clone();
-  orbMat2.color = new THREE.Color(0x64d2ff);
-  const orb2 = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, 32), orbMat2);
-  orb2.position.set(2.8, -1.5, 0);
-  orbsGroup.add(orb2);
-
-  const lightTop = new THREE.DirectionalLight(0xffffff, 2);
-  lightTop.position.set(5, 10, 7);
-  scene.add(lightTop);
-
-  const lightFill = new THREE.AmbientLight(0xffffff, 0.8);
-  scene.add(lightFill);
-
-  let mouseX = 0, mouseY = 0;
-  window.addEventListener('mousemove', (e) => {
-    mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-    mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-  });
-
-  function render3D() {
-    requestAnimationFrame(render3D);
-    orb1.rotation.y += 0.003;
-    orb1.rotation.x += 0.002;
-    orb2.rotation.y -= 0.004;
-    orb2.rotation.x -= 0.003;
-
-    orbsGroup.rotation.y = THREE.MathUtils.lerp(orbsGroup.rotation.y, mouseX * 0.3, 0.05);
-    orbsGroup.rotation.x = THREE.MathUtils.lerp(orbsGroup.rotation.x, mouseY * 0.3, 0.05);
-    renderer.render(scene, camera);
-  }
-  render3D();
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  // 2. THEME CONTROLLER
-  const themeToggle = document.getElementById('themeToggle');
-  themeToggle.addEventListener('click', () => {
-    const isDark = document.body.getAttribute('data-theme') === 'dark';
-    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeToggle.innerText = isDark ? '🌙' : '☀️';
-  });
-
-  // 3. BACKEND INITIALIZATION (SUPABASE)
+  // 1. SUPABASE CLIENT
   const SUPABASE_URL = "https://ssxbdhcbhhzqkqrajzin.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
-  const clientDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 4. BUSINESS & ACCESS CONTROL CONFIGURATION
   const OFFICE_LAT = 6.867059730641403;
   const OFFICE_LNG = 79.90006807607381;
-  const MAX_RADIUS_METERS = 200;
+  const RADIUS = 200;
   const DEFAULT_PWD = "test123";
+  const ADMIN_USERS = ['david@codinglegends.io','stefan@codinglegends.io','azmeer@codinglegends.io','vishwa@codinglegends.io','sahansa@codinglegends.io'];
+  const HEHE_USER = 'sahansa@codinglegends.io';
 
-  // ALL 5 USERS DESIGNATED AS ADMINS
-  const ADMIN_STAFF = [
-    'david@codinglegends.io',
-    'stefan@codinglegends.io',
-    'azmeer@codinglegends.io',
-    'vishwa@codinglegends.io',
-    'sahansa@codinglegends.io'
-  ];
-
-  // ONLY SAHANSA CAN MANUALLY OVERRIDE / EDIT ATTENDANCE TIMESTAMPS
-  const SUPERUSER_MANUAL_EDITOR = 'sahansa@codinglegends.io';
-
-  let activeSessionUser = null;
+  let user = null;
   let activeShift = null;
-  let clockInterval = null;
-  let isWithinOffice = false;
-  let currentUserCoords = null;
-  let rawAttendanceCache = [];
+  let timerId = null;
+  let inBounds = false;
+  let cachedLogs = [];
 
-  function setNotice(elementId, text, isError = true) {
-    const el = document.getElementById(elementId);
-    el.innerText = text;
-    el.className = isError ? "notice notice-err" : "notice notice-ok";
-    el.classList.remove('hidden');
-  }
+  // Theme Toggler
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeToggle').innerText = isDark ? '🌙' : '☀️';
+  });
 
-  // Haversine Distance Formula
-  function computeMeters(lat1, lon1, lat2, lon2) {
+  function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  function startGeofencing() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.watchPosition(
+  function startLocationWatcher() {
+    navigator.geolocation?.watchPosition(
       (pos) => {
-        currentUserCoords = pos.coords;
-        const dist = computeMeters(pos.coords.latitude, pos.coords.longitude, OFFICE_LAT, OFFICE_LNG);
+        const dist = getDistance(pos.coords.latitude, pos.coords.longitude, OFFICE_LAT, OFFICE_LNG);
+        inBounds = dist <= RADIUS;
+        document.getElementById('geoDist').innerText = `Distance to Office: ${Math.round(dist)}m`;
+        
         const pill = document.getElementById('geoPill');
-        const meter = document.getElementById('distanceMeter');
-        isWithinOffice = dist <= MAX_RADIUS_METERS;
+        pill.className = inBounds ? "pill pill-ok" : "pill pill-bad";
+        pill.innerText = inBounds ? `● In Office (${Math.round(dist)}m)` : `✕ Outside Office (${Math.round(dist)}m)`;
 
-        meter.innerText = `Current Distance to Office: ${Math.round(dist)}m (Allowed: ${MAX_RADIUS_METERS}m)`;
-
-        if (isWithinOffice) {
-          pill.className = "status-pill pill-ok";
-          pill.innerText = `● In Office (${Math.round(dist)}m)`;
-        } else {
-          pill.className = "status-pill pill-bad";
-          pill.innerText = `✕ Outside Bounds (${Math.round(dist)}m)`;
-        }
-        syncPunchButtons();
+        document.getElementById('btnIn').disabled = activeShift || !inBounds;
+        document.getElementById('btnOut').disabled = !activeShift || !inBounds;
       },
       () => {
-        const pill = document.getElementById('geoPill');
-        pill.className = "status-pill pill-bad";
-        pill.innerText = "GPS Access Denied";
+        document.getElementById('geoPill').innerText = "GPS Access Denied";
       },
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: 8000 }
+      { enableHighAccuracy: true }
     );
   }
 
-  function syncPunchButtons() {
-    const btnIn = document.getElementById('checkInBtn');
-    const btnOut = document.getElementById('checkOutBtn');
-
-    if (activeShift) {
-      btnIn.disabled = true;
-      btnOut.disabled = !isWithinOffice;
-    } else {
-      btnIn.disabled = !isWithinOffice;
-      btnOut.disabled = true;
-    }
+  function runClock() {
+    if (!activeShift) return document.getElementById('timer').innerText = "00:00:00";
+    const sec = Math.floor((new Date() - new Date(activeShift.check_in)) / 1000);
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    document.getElementById('timer').innerText = `${h}:${m}:${s}`;
   }
 
-  function renderClock() {
-    if (!activeShift) {
-      document.getElementById('activeClock').innerText = "00:00:00";
-      return;
-    }
-    const delta = Math.floor((new Date() - new Date(activeShift.check_in)) / 1000);
-    const hrs = String(Math.floor(delta / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((delta % 3600) / 60)).padStart(2, '0');
-    const secs = String(delta % 60).padStart(2, '0');
-    document.getElementById('activeClock').innerText = `${hrs}:${mins}:${secs}`;
-  }
-
-  // 5. AUTH LOGIC
-  async function performLogin() {
+  // Auth Operations
+  document.getElementById('loginBtn').addEventListener('click', async () => {
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
     const password = document.getElementById('authPassword').value;
+    const { error } = await db.auth.signInWithPassword({ email, password });
+    if (error) {
+      document.getElementById('authNotice').innerText = error.message;
+      document.getElementById('authNotice').classList.remove('hidden');
+    } else checkUser();
+  });
 
-    if (!email.endsWith('@codinglegends.io')) {
-      return setNotice('authNotice', "Access restricted to @codinglegends.io accounts.");
-    }
-
-    setNotice('authNotice', "Authenticating...", false);
-    const { error } = await clientDB.auth.signInWithPassword({ email, password });
-    if (error) setNotice('authNotice', error.message);
-    else verifySession();
-  }
-
-  async function performSetup() {
+  document.getElementById('setupBtn').addEventListener('click', async () => {
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
-    if (!email.endsWith('@codinglegends.io')) {
-      return setNotice('authNotice', "Access restricted to @codinglegends.io accounts.");
-    }
+    await db.auth.signUp({ email, password: DEFAULT_PWD });
+    const { error } = await db.auth.signInWithPassword({ email, password: DEFAULT_PWD });
+    if (error) {
+      document.getElementById('authNotice').innerText = error.message;
+      document.getElementById('authNotice').classList.remove('hidden');
+    } else checkUser();
+  });
 
-    setNotice('authNotice', "Provisioning account...", false);
-    const { error } = await clientDB.auth.signUp({ email, password: DEFAULT_PWD });
-    
-    if (error && !error.message.includes("already registered")) {
-      return setNotice('authNotice', error.message);
-    }
+  document.getElementById('savePwdBtn').addEventListener('click', async () => {
+    const p1 = document.getElementById('newPwd1').value;
+    const p2 = document.getElementById('newPwd2').value;
+    if (p1.length < 6 || p1 === DEFAULT_PWD || p1 !== p2) return alert("Invalid password");
 
-    const { error: signErr } = await clientDB.auth.signInWithPassword({ email, password: DEFAULT_PWD });
-    if (signErr) setNotice('authNotice', signErr.message);
-    else verifySession();
-  }
+    await db.auth.updateUser({ password: p1 });
+    await db.from('profiles').update({ must_change_password: false }).eq('id', user.id);
+    checkUser();
+  });
 
-  async function saveNewMasterPassword() {
-    const p1 = document.getElementById('newMasterPassword').value;
-    const p2 = document.getElementById('confirmMasterPassword').value;
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await db.auth.signOut();
+    checkUser();
+  });
 
-    if (p1.length < 6) return setNotice('pwdNotice', "Password must be at least 6 characters.");
-    if (p1 === DEFAULT_PWD) return setNotice('pwdNotice', "Cannot reuse default test123.");
-    if (p1 !== p2) return setNotice('pwdNotice', "Passwords do not match.");
-
-    const { error } = await clientDB.auth.updateUser({ password: p1 });
-    if (error) return setNotice('pwdNotice', error.message);
-
-    await clientDB.from('profiles').update({ must_change_password: false }).eq('id', activeSessionUser.id);
-    alert("Password saved securely.");
-    verifySession();
-  }
-
-  async function performSelfPasswordChange() {
-    const pwd = document.getElementById('selfNewPassword').value;
-    if (pwd.length < 6) return alert("Password must be 6+ characters.");
-
-    const { error } = await clientDB.auth.updateUser({ password: pwd });
-    if (error) alert("Error: " + error.message);
-    else {
-      alert("Password updated successfully.");
-      document.getElementById('selfNewPassword').value = "";
-    }
-  }
-
-  // 6. ATTENDANCE ACTIONS (ADMINS & EMPLOYEES)
-  async function punchCheckIn() {
-    if (!isWithinOffice) return alert("You must be within 200m of the office location.");
-
-    const { data, error } = await clientDB.from('attendance').insert([{
-      user_id: activeSessionUser.id,
-      user_email: activeSessionUser.email,
-      check_in: new Date().toISOString(),
-      check_in_lat: currentUserCoords ? currentUserCoords.latitude : null,
-      check_in_lng: currentUserCoords ? currentUserCoords.longitude : null
+  // Punch Events
+  document.getElementById('btnIn').addEventListener('click', async () => {
+    const { data, error } = await db.from('attendance').insert([{
+      user_id: user.id,
+      user_email: user.email,
+      check_in: new Date().toISOString()
     }]).select().single();
 
     if (!error) {
       activeShift = data;
-      clearInterval(clockInterval);
-      clockInterval = setInterval(renderClock, 1000);
-      syncPunchButtons();
+      clearInterval(timerId);
+      timerId = setInterval(runClock, 1000);
+      document.getElementById('btnIn').disabled = true;
+      document.getElementById('btnOut').disabled = false;
       loadUserLogs();
     }
-  }
+  });
 
-  async function punchCheckOut() {
-    if (!isWithinOffice) return alert("You must be on-site to check out.");
-
+  document.getElementById('btnOut').addEventListener('click', async () => {
     const now = new Date();
-    const diffHours = parseFloat(((now - new Date(activeShift.check_in)) / 36e5).toFixed(2));
-    const is9h = diffHours >= 9.0;
+    const diff = parseFloat(((now - new Date(activeShift.check_in)) / 36e5).toFixed(2));
+    const is9h = diff >= 9.0;
 
-    const { error } = await clientDB.from('attendance').update({
+    await db.from('attendance').update({
       check_out: now.toISOString(),
-      work_hours: diffHours,
+      work_hours: diff,
       completed_9h: is9h
     }).eq('id', activeShift.id);
 
-    if (!error) {
-      activeShift = null;
-      clearInterval(clockInterval);
-      document.getElementById('activeClock').innerText = "00:00:00";
-      syncPunchButtons();
-      loadUserLogs();
-    }
-  }
+    activeShift = null;
+    clearInterval(timerId);
+    document.getElementById('timer').innerText = "00:00:00";
+    document.getElementById('btnIn').disabled = false;
+    document.getElementById('btnOut').disabled = true;
+    loadUserLogs();
+  });
 
   async function loadUserLogs() {
-    const { data } = await clientDB.from('attendance')
-      .select('*')
-      .eq('user_id', activeSessionUser.id)
-      .order('check_in', { ascending: false });
-
-    const tbody = document.getElementById('userShiftLogs');
+    const { data } = await db.from('attendance').select('*').eq('user_id', user.id).order('check_in', { ascending: false });
+    const tbody = document.getElementById('myLogs');
     tbody.innerHTML = '';
-    data?.forEach(row => {
-      const inD = new Date(row.check_in);
-      const outD = row.check_out ? new Date(row.check_out) : null;
+    data?.forEach(r => {
       tbody.innerHTML += `
         <tr>
-          <td>${inD.toLocaleDateString([], { month: 'short', day: 'numeric' })}</td>
-          <td>${inD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-          <td>${outD ? outD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</td>
-          <td>
-            ${row.work_hours 
-              ? `<span class="badge-9h ${row.completed_9h ? 'badge-pass' : 'badge-fail'}">${row.work_hours}h</span>`
-              : '<span style="color:var(--accent);">In Progress</span>'}
-          </td>
+          <td>${new Date(r.check_in).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
+          <td>${new Date(r.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+          <td>${r.check_out ? new Date(r.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
+          <td><b>${r.work_hours ? r.work_hours + 'h' : 'Active'}</b></td>
         </tr>`;
     });
   }
 
-  // 7. MANAGER ANALYTICS MODULE
-  async function loadAdminSuite() {
-    const { data: allAttendance } = await clientDB.from('attendance').select('*').order('check_in', { ascending: false });
-    const { data: profiles } = await clientDB.from('profiles').select('*');
-    rawAttendanceCache = allAttendance || [];
+  async function loadAnalytics() {
+    const { data: all } = await db.from('attendance').select('*').order('check_in', { ascending: false });
+    const { data: profiles } = await db.from('profiles').select('*');
+    cachedLogs = all || [];
 
-    // Metrics Calculations
     const todayStr = new Date().toISOString().split('T')[0];
-    const presentTodaySet = new Set();
-    let underhoursCount = 0;
+    const present = new Set(cachedLogs.filter(l => l.check_in.startsWith(todayStr)).map(l => l.user_email));
+    const under = cachedLogs.filter(l => l.work_hours && l.work_hours < 9.0).length;
 
-    allAttendance?.forEach(r => {
-      if (r.check_in.startsWith(todayStr)) {
-        presentTodaySet.add(r.user_email);
-      }
-      if (r.work_hours && r.work_hours < 9.0) {
-        underhoursCount++;
-      }
-    });
+    document.getElementById('statTotal').innerText = ADMIN_USERS.length;
+    document.getElementById('statPresent').innerText = present.size;
+    document.getElementById('statAbsent').innerText = Math.max(0, ADMIN_USERS.length - present.size);
+    document.getElementById('statUnder').innerText = under;
 
-    const totalStaff = profiles ? profiles.length : ADMIN_STAFF.length;
-    const presentCount = presentTodaySet.size;
-    const absentCount = Math.max(0, totalStaff - presentCount);
-
-    document.getElementById('statStaffCount').innerText = totalStaff;
-    document.getElementById('statPresentToday').innerText = presentCount;
-    document.getElementById('statAbsentToday').innerText = absentCount;
-    document.getElementById('statUnderhours').innerText = underhoursCount;
-
-    // Populate Company Attendance Registry
-    const logBody = document.getElementById('adminAttendanceLogs');
-    logBody.innerHTML = '';
-    allAttendance?.forEach(log => {
-      const inD = new Date(log.check_in);
-      const outD = log.check_out ? new Date(log.check_out) : null;
-      logBody.innerHTML += `
+    const cBody = document.getElementById('companyLogs');
+    cBody.innerHTML = '';
+    cachedLogs.forEach(l => {
+      cBody.innerHTML += `
         <tr>
-          <td><b>${log.user_email.split('@')[0]}</b></td>
-          <td>${inD.toLocaleDateString([], { month: 'short', day: 'numeric' })}</td>
-          <td>${inD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-          <td>${outD ? outD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</td>
-          <td>${log.work_hours ? log.work_hours + 'h' : 'Active'}</td>
-          <td>
-            ${log.work_hours 
-              ? (log.completed_9h ? '<span class="status-pill pill-ok">Met (9h+)</span>' : '<span class="status-pill pill-bad">Under Hours</span>')
-              : '<span class="status-pill pill-warn">On Premise</span>'}
-          </td>
+          <td><b>${l.user_email.split('@')[0]}</b></td>
+          <td>${new Date(l.check_in).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
+          <td>${new Date(l.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+          <td>${l.check_out ? new Date(l.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
+          <td>${l.work_hours ? l.work_hours + 'h' : 'Active'}</td>
+          <td>${l.completed_9h ? '<span class="pill pill-ok">9h+</span>' : '<span class="pill pill-warn">Under</span>'}</td>
         </tr>`;
     });
 
-    // Populate Staff Credentials Table
-    const rosterBody = document.getElementById('adminRosterList');
-    rosterBody.innerHTML = '';
-    profiles?.forEach(prof => {
-      const mustChange = prof.must_change_password;
-      const isAdminRole = ADMIN_STAFF.includes(prof.email);
-      rosterBody.innerHTML += `
+    const rBody = document.getElementById('rosterList');
+    rBody.innerHTML = '';
+    ADMIN_USERS.forEach(email => {
+      rBody.innerHTML += `
         <tr>
-          <td><b>${prof.email}</b></td>
-          <td>${isAdminRole ? '<span style="color:var(--accent); font-weight:600;">Admin</span>' : 'Employee'}</td>
-          <td>${mustChange ? '<span class="status-pill pill-warn">Default Key</span>' : '<span class="status-pill pill-ok">Custom Secure</span>'}</td>
-          <td>
-            <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 11px;" onclick="adminResetPassword('${prof.email}')">
-              Reset to test123
-            </button>
-          </td>
+          <td>${email}</td>
+          <td>Admin</td>
+          <td><button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="resetPwd('${email}')">Reset test123</button></td>
         </tr>`;
     });
 
-    // Populate Manual Edit Selector for Sahansa
-    if (activeSessionUser.email === SUPERUSER_MANUAL_EDITOR) {
-      const selectEl = document.getElementById('editShiftSelect');
-      selectEl.innerHTML = '<option value="">-- Choose Shift Record to Edit --</option>';
-      allAttendance?.forEach(item => {
-        const d = new Date(item.check_in).toLocaleDateString();
-        selectEl.innerHTML += `<option value="${item.id}">${item.user_email} | ${d} (${item.work_hours || 'In-progress'}h)</option>`;
+    // Populate HEHE Select
+    if (user.email === HEHE_USER) {
+      const select = document.getElementById('heheShiftSelect');
+      select.innerHTML = '<option value="">-- Choose Shift --</option>';
+      cachedLogs.forEach(l => {
+        select.innerHTML += `<option value="${l.id}">${l.user_email.split('@')[0]} | ${new Date(l.check_in).toLocaleDateString()}</option>`;
       });
     }
   }
 
-  // Sahansa Manual Time Edit Handler
-  document.getElementById('editShiftSelect').addEventListener('change', (e) => {
-    const shiftId = e.target.value;
-    const record = rawAttendanceCache.find(r => r.id === shiftId);
-    if (!record) return;
-
-    if (record.check_in) {
-      document.getElementById('manualCheckInInput').value = new Date(record.check_in).toISOString().slice(0, 16);
-    }
-    if (record.check_out) {
-      document.getElementById('manualCheckOutInput').value = new Date(record.check_out).toISOString().slice(0, 16);
-    } else {
-      document.getElementById('manualCheckOutInput').value = '';
-    }
-  });
-
-  document.getElementById('btnSubmitManualEdit').addEventListener('click', async () => {
-    // SECURITY GUARD: Ensure only sahansa@codinglegends.io executes manual edits
-    if (activeSessionUser.email !== SUPERUSER_MANUAL_EDITOR) {
-      return alert("Security Violation: Only sahansa@codinglegends.io has authorization to manually override attendance times.");
-    }
-
-    const shiftId = document.getElementById('editShiftSelect').value;
-    const inVal = document.getElementById('manualCheckInInput').value;
-    const outVal = document.getElementById('manualCheckOutInput').value;
-
-    if (!shiftId || !inVal) return alert("Select a shift and define check-in.");
-
-    const inDate = new Date(inVal);
-    let outDate = outVal ? new Date(outVal) : null;
-    let hoursWorked = null;
-    let is9h = false;
-
-    if (outDate) {
-      hoursWorked = parseFloat(((outDate - inDate) / 36e5).toFixed(2));
-      is9h = hoursWorked >= 9.0;
-    }
-
-    const { error } = await clientDB.from('attendance').update({
-      check_in: inDate.toISOString(),
-      check_out: outDate ? outDate.toISOString() : null,
-      work_hours: hoursWorked,
-      completed_9h: is9h
-    }).eq('id', shiftId);
-
-    if (error) {
-      alert("Update error: " + error.message);
-    } else {
-      alert("Shift timestamp manually adjusted by Sahansa.");
-      loadAdminSuite();
-    }
-  });
-
-  window.adminResetPassword = async function(email) {
-    if (!confirm(`Are you sure you want to reset password for ${email}?`)) return;
-    await clientDB.from('profiles').update({ must_change_password: true }).eq('email', email);
-    alert(`Password reset trigger flagged for ${email}. User must set new password upon next sign in.`);
-    loadAdminSuite();
+  window.resetPwd = async (email) => {
+    await db.from('profiles').update({ must_change_password: true }).eq('email', email);
+    alert(`Reset flag triggered for ${email}`);
   };
 
-  // 8. SESSION CONTROLLER
-  async function verifySession() {
-    const { data: { session } } = await clientDB.auth.getSession();
+  // HEHE Event Handlers (Sahansa Exclusive)
+  document.getElementById('heheShiftSelect').addEventListener('change', (e) => {
+    const r = cachedLogs.find(x => x.id === e.target.value);
+    if (!r) return;
+    document.getElementById('heheIn').value = r.check_in ? new Date(r.check_in).toISOString().slice(0, 16) : '';
+    document.getElementById('heheOut').value = r.check_out ? new Date(r.check_out).toISOString().slice(0, 16) : '';
+  });
 
-    const viewAuth = document.getElementById('view-auth');
-    const viewPwd = document.getElementById('view-pwd-change');
-    const viewEmp = document.getElementById('view-employee');
-    const viewAdm = document.getElementById('view-admin');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const adminSwitcher = document.getElementById('adminViewSwitcher');
+  document.getElementById('heheSave').addEventListener('click', async () => {
+    if (user.email !== HEHE_USER) return alert("Unauthorized");
+    const id = document.getElementById('heheShiftSelect').value;
+    const inVal = document.getElementById('heheIn').value;
+    const outVal = document.getElementById('heheOut').value;
+    if (!id || !inVal) return alert("Select shift and time");
 
-    if (!session) {
-      activeSessionUser = null;
-      activeShift = null;
-      clearInterval(clockInterval);
-      viewAuth.classList.remove('hidden');
-      viewPwd.classList.add('hidden');
-      viewEmp.classList.add('hidden');
-      viewAdm.classList.add('hidden');
-      logoutBtn.classList.add('hidden');
-      adminSwitcher.classList.add('hidden');
-      return;
+    const inD = new Date(inVal);
+    const outD = outVal ? new Date(outVal) : null;
+    const hours = outD ? parseFloat(((outD - inD) / 36e5).toFixed(2)) : null;
+
+    const { error } = await db.from('attendance').update({
+      check_in: inD.toISOString(),
+      check_out: outD ? outD.toISOString() : null,
+      work_hours: hours,
+      completed_9h: hours ? hours >= 9.0 : false
+    }).eq('id', id);
+
+    if (error) alert("Error: " + error.message);
+    else {
+      alert("Updated successfully");
+      loadAnalytics();
     }
+  });
 
-    activeSessionUser = session.user;
-    logoutBtn.classList.remove('hidden');
-
-    const { data: profile } = await clientDB.from('profiles').select('*').eq('id', activeSessionUser.id).maybeSingle();
-
-    // Intercept with Password Change if required
-    if (profile && profile.must_change_password) {
-      viewAuth.classList.add('hidden');
-      viewEmp.classList.add('hidden');
-      viewAdm.classList.add('hidden');
-      adminSwitcher.classList.add('hidden');
-      viewPwd.classList.remove('hidden');
-      return;
-    }
-
-    viewAuth.classList.add('hidden');
-    viewPwd.classList.add('hidden');
-
-    // Admin authorization check: David, Stefan, Azmeer, Vishwa, and Sahansa
-    const isAdmin = ADMIN_STAFF.includes(activeSessionUser.email);
-
-    // Initialize geofencing and load user's open shift (available to both admins and employees)
-    const { data: openShift } = await clientDB.from('attendance')
-      .select('*')
-      .eq('user_id', activeSessionUser.id)
-      .is('check_out', null)
-      .order('check_in', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (openShift) {
-      activeShift = openShift;
-      clearInterval(clockInterval);
-      clockInterval = setInterval(renderClock, 1000);
-    }
-    startGeofencing();
-    loadUserLogs();
-
-    if (isAdmin) {
-      adminSwitcher.classList.remove('hidden');
-      
-      // Sahansa-only manual edit button check
-      if (activeSessionUser.email === SUPERUSER_MANUAL_EDITOR) {
-        document.getElementById('tabManualEdit').classList.remove('hidden');
-      } else {
-        document.getElementById('tabManualEdit').classList.add('hidden');
-      }
-
-      // Default admins to Admin Analytics Suite
-      viewEmp.classList.add('hidden');
-      viewAdm.classList.remove('hidden');
-      loadAdminSuite();
-    } else {
-      adminSwitcher.classList.add('hidden');
-      viewAdm.classList.add('hidden');
-      viewEmp.classList.remove('hidden');
-      document.getElementById('userWelcome').innerText = `Staff: ${activeSessionUser.email.split('@')[0]}`;
-    }
+  // Navigation Tabs Handlers
+  function switchTab(activeBtn, targetSection) {
+    document.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+    activeBtn.classList.add('active');
+    ['section-punch', 'section-analytics', 'section-hehe'].forEach(s => document.getElementById(s).classList.add('hidden'));
+    document.getElementById(targetSection).classList.remove('hidden');
   }
 
-  // 9. EVENT REGISTRATION
-  document.getElementById('loginBtn').addEventListener('click', performLogin);
-  document.getElementById('setupBtn').addEventListener('click', performSetup);
-  document.getElementById('savePwdBtn').addEventListener('click', saveNewMasterPassword);
-  document.getElementById('selfUpdatePwdBtn').addEventListener('click', performSelfPasswordChange);
-  document.getElementById('checkInBtn').addEventListener('click', punchCheckIn);
-  document.getElementById('checkOutBtn').addEventListener('click', punchCheckOut);
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await clientDB.auth.signOut();
-    verifySession();
+  document.getElementById('tabPunch').addEventListener('click', (e) => switchTab(e.target, 'section-punch'));
+  document.getElementById('tabAnalytics').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-analytics');
+    loadAnalytics();
+  });
+  document.getElementById('tabHehe').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-hehe');
+    loadAnalytics();
   });
 
-  // Admin Top-Nav View Switcher
-  document.getElementById('switchPunchViewBtn').addEventListener('click', () => {
-    document.getElementById('view-admin').classList.add('hidden');
-    document.getElementById('view-employee').classList.remove('hidden');
-    document.getElementById('switchPunchViewBtn').className = "btn btn-primary";
-    document.getElementById('switchAdminViewBtn').className = "btn btn-secondary";
-    document.getElementById('userWelcome').innerText = `Admin Punch: ${activeSessionUser.email.split('@')[0]}`;
-  });
+  // Session Verification
+  async function checkUser() {
+    const { data: { session } } = await db.auth.getSession();
+    const vAuth = document.getElementById('view-auth');
+    const vPwd = document.getElementById('view-pwd');
+    const vMain = document.getElementById('view-main');
+    const lBtn = document.getElementById('logoutBtn');
 
-  document.getElementById('switchAdminViewBtn').addEventListener('click', () => {
-    document.getElementById('view-employee').classList.add('hidden');
-    document.getElementById('view-admin').classList.remove('hidden');
-    document.getElementById('switchAdminViewBtn').className = "btn btn-primary";
-    document.getElementById('switchPunchViewBtn').className = "btn btn-secondary";
-    loadAdminSuite();
-  });
+    if (!session) {
+      user = null;
+      vAuth.classList.remove('hidden');
+      vPwd.classList.add('hidden');
+      vMain.classList.add('hidden');
+      lBtn.classList.add('hidden');
+      return;
+    }
 
-  // Admin Sub Tabs
-  document.getElementById('tabAnalytics').addEventListener('click', () => {
-    document.getElementById('tabAnalytics').className = 'sub-tab active';
-    document.getElementById('tabSecurity').className = 'sub-tab';
-    document.getElementById('tabManualEdit').className = 'sub-tab';
-    document.getElementById('adminAnalyticsSection').classList.remove('hidden');
-    document.getElementById('adminSecuritySection').classList.add('hidden');
-    document.getElementById('adminManualEditSection').classList.add('hidden');
-  });
+    user = session.user;
+    lBtn.classList.remove('hidden');
 
-  document.getElementById('tabSecurity').addEventListener('click', () => {
-    document.getElementById('tabSecurity').className = 'sub-tab active';
-    document.getElementById('tabAnalytics').className = 'sub-tab';
-    document.getElementById('tabManualEdit').className = 'sub-tab';
-    document.getElementById('adminSecuritySection').classList.remove('hidden');
-    document.getElementById('adminAnalyticsSection').classList.add('hidden');
-    document.getElementById('adminManualEditSection').classList.add('hidden');
-  });
+    const { data: prof } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (prof?.must_change_password) {
+      vAuth.classList.add('hidden');
+      vMain.classList.add('hidden');
+      vPwd.classList.remove('hidden');
+      return;
+    }
 
-  document.getElementById('tabManualEdit').addEventListener('click', () => {
-    document.getElementById('tabManualEdit').className = 'sub-tab active';
-    document.getElementById('tabAnalytics').className = 'sub-tab';
-    document.getElementById('tabSecurity').className = 'sub-tab';
-    document.getElementById('adminManualEditSection').classList.remove('hidden');
-    document.getElementById('adminAnalyticsSection').classList.add('hidden');
-    document.getElementById('adminSecuritySection').classList.add('hidden');
-  });
+    vAuth.classList.add('hidden');
+    vPwd.classList.add('hidden');
+    vMain.classList.remove('hidden');
+    document.getElementById('userTag').innerText = `${user.email.split('@')[0]} (Admin)`;
 
-  verifySession();
+    // Role-specific Tabs
+    document.getElementById('tabAnalytics').classList.remove('hidden');
+    if (user.email === HEHE_USER) {
+      document.getElementById('tabHehe').classList.remove('hidden');
+    }
+
+    // Check Open Shift
+    const { data: open } = await db.from('attendance').select('*').eq('user_id', user.id).is('check_out', null).maybeSingle();
+    if (open) {
+      activeShift = open;
+      clearInterval(timerId);
+      timerId = setInterval(runClock, 1000);
+    }
+
+    startLocationWatcher();
+    loadUserLogs();
+  }
+
+  checkUser();
 </script>
 </body>
 </html>
