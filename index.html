@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>TimeFlow++ • Coding Legends</title>
+  <title>TimeFlow • Coding Legends</title>
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230071e3'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,sans-serif' font-weight='700' font-size='26' fill='%23ffffff'%3ECL%3C/text%3E%3C/svg%3E">
+  
+  <!-- Supabase & PDF Generation Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root {
@@ -34,7 +38,7 @@
       --segmented-bg: rgba(118, 118, 128, 0.24);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; -webkit-font-smoothing: antialiased; }
     body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px; transition: background 0.2s; }
     
     .container { width: 100%; max-width: 860px; }
@@ -48,7 +52,7 @@
     .segmented-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--subtext); cursor: pointer; transition: all 0.15s; }
     .segmented-btn.active { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
 
-    .btn { padding: 10px 18px; border-radius: 11px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .btn { padding: 10px 18px; border-radius: 11px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; display: inline-flex; align-items: center; gap: 6px; }
     .btn:active { opacity: 0.7; }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .btn-primary { background: var(--accent); color: #fff; }
@@ -77,7 +81,6 @@
     .hidden { display: none !important; }
     .notice { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; }
     .notice-err { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
-    .notice-ok { background: rgba(52, 199, 89, 0.12); color: var(--success); }
   </style>
 </head>
 <body data-theme="light">
@@ -110,7 +113,7 @@
       </div>
     </div>
 
-    <!-- 2. MANDATORY PASSWORD UPDATE INTERCEPTOR -->
+    <!-- 2. MANDATORY PASSWORD UPDATE -->
     <div id="view-pwd" class="hidden" style="max-width: 340px; margin: 24px auto; text-align: center;">
       <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Create Password</h2>
       <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">You must change your password from test123 to continue.</p>
@@ -140,7 +143,7 @@
         <div style="text-align: center; padding: 18px 0;">
           <div id="geoPill" class="pill pill-warn">Checking location...</div>
           <div id="timer" class="timer">00:00:00</div>
-          <div id="geoDist" style="font-size: 12px; color: var(--subtext); margin-bottom: 18px;">Office Radius: 200m</div>
+          <div id="geoDist" style="font-size: 12px; color: var(--subtext); margin-bottom: 18px;">Office Perimeter: 200m</div>
 
           <div style="display: flex; gap: 10px; justify-content: center; max-width: 320px; margin: 0 auto;">
             <button id="btnIn" class="btn btn-primary" style="flex: 1;" disabled>Check In</button>
@@ -157,7 +160,7 @@
         </div>
       </div>
 
-      <!-- TAB B: REPORTS ENGINE (DAILY / WEEKLY / MONTHLY) -->
+      <!-- TAB B: REPORTS ENGINE (PDF & CSV EXPORTS) -->
       <div id="section-reports" class="hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
           <div class="segmented-control">
@@ -165,7 +168,10 @@
             <button class="segmented-btn" id="btnRepWeekly">Weekly</button>
             <button class="segmented-btn" id="btnRepMonthly">Monthly</button>
           </div>
-          <button id="btnExportCSV" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">↓ Export CSV</button>
+          <div style="display: flex; gap: 8px;">
+            <button id="btnExportPDF" class="btn btn-primary" style="font-size: 12px; padding: 6px 14px;">↓ Export PDF</button>
+            <button id="btnExportCSV" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;">↓ Export CSV</button>
+          </div>
         </div>
 
         <div class="grid-4">
@@ -187,7 +193,7 @@
       <div id="section-admin" class="hidden">
         <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Staff Account Security</h3>
         <p style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">
-          Clicking "Reset" resets their password to <b>test123</b> and forces a password change upon login.
+          Resetting an account sets their password back to <b>test123</b> and forces a password change upon entry.
         </p>
 
         <div style="overflow-x: auto;">
@@ -230,8 +236,9 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const OFFICE_LAT = 6.867059730641403;
-  const OFFICE_LNG = 79.90006807607381;
+  // EXACT LOCATION SPECIFICATION
+  const OFFICE_LAT = 6.86706172009674;
+  const OFFICE_LNG = 79.90005537607439;
   const RADIUS = 200;
   const DEFAULT_PWD = "test123";
   const STAFF = ['david@codinglegends.io','stefan@codinglegends.io','azmeer@codinglegends.io','vishwa@codinglegends.io','sahansa@codinglegends.io'];
@@ -311,7 +318,7 @@
     notice.classList.add('hidden');
 
     if (!STAFF.includes(email)) {
-      notice.innerText = "Only Coding Legends roster accounts can register.";
+      notice.innerText = "Only authorized Coding Legends accounts can register.";
       notice.classList.remove('hidden');
       return;
     }
@@ -417,7 +424,7 @@
     });
   }
 
-  // REPORTS & CSV EXPORT
+  // REPORTS ENGINE
   async function loadReports(timeframe = 'daily') {
     currentReportFilter = timeframe;
     const { data: all } = await db.from('attendance').select('*').order('check_in', { ascending: false });
@@ -467,7 +474,7 @@
     document.getElementById('repUnderhours').innerText = underCount;
   }
 
-  // Export CSV
+  // EXPORT CSV
   document.getElementById('btnExportCSV').addEventListener('click', () => {
     let csv = "Employee,Date,Check In,Check Out,Work Hours,Completed 9h\n";
     allAttendanceData.forEach(r => {
@@ -482,6 +489,61 @@
     a.href = url;
     a.download = `CodingLegends_Attendance_${currentReportFilter}.csv`;
     a.click();
+  });
+
+  // EXPORT PDF
+  document.getElementById('btnExportPDF').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Apple-minimal header styling
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(29, 29, 31);
+    doc.text("Coding Legends • Attendance Report", 14, 20);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(134, 134, 139);
+    doc.text(`Scope: ${currentReportFilter.toUpperCase()} | Generated: ${new Date().toLocaleString()}`, 14, 27);
+
+    // Summary Metrics Banner
+    const totalHrs = document.getElementById('repTotalHours').innerText;
+    const totalShifts = document.getElementById('repTotalShifts').innerText;
+    const completed9h = document.getElementById('repCompleted9h').innerText;
+
+    doc.setFillColor(245, 245, 247);
+    doc.roundedRect(14, 32, 182, 14, 3, 3, 'F');
+    doc.setFontSize(9);
+    doc.setTextColor(29, 29, 31);
+    doc.text(`Total Shifts: ${totalShifts}   |   Logged Time: ${totalHrs}   |   Completed 9h Days: ${completed9h}`, 18, 41);
+
+    // Table mapping
+    const tableRows = [];
+    allAttendanceData.forEach(r => {
+      const inD = new Date(r.check_in);
+      const outD = r.check_out ? new Date(r.check_out) : null;
+      tableRows.push([
+        r.user_email.split('@')[0],
+        inD.toLocaleDateString(),
+        inD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        outD ? outD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Active',
+        r.work_hours ? `${r.work_hours}h` : 'In Progress',
+        r.completed_9h ? '9h+ Met' : (r.work_hours ? 'Under 9h' : 'Active')
+      ]);
+    });
+
+    doc.autoTable({
+      head: [['Employee', 'Date', 'Check In', 'Check Out', 'Hours', 'Status']],
+      body: tableRows,
+      startY: 50,
+      theme: 'plain',
+      styles: { font: 'helvetica', fontSize: 9, cellPadding: 4 },
+      headStyles: { fontStyle: 'bold', textColor: [134, 134, 139], fillColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [248, 248, 250] }
+    });
+
+    doc.save(`CodingLegends_Attendance_${currentReportFilter}.pdf`);
   });
 
   // ADMIN ROSTER & RESET PASSWORD (FIXED RPC)
@@ -519,12 +581,11 @@
   window.resetStaffPassword = async (email) => {
     if (!confirm(`Reset ${email} password to test123?`)) return;
 
-    // Direct RPC Call: Alters auth.users and profiles atomically
     const { data, error } = await db.rpc('admin_reset_user_password', { target_email: email });
     if (error) {
       alert("Error resetting password: " + error.message);
     } else {
-      alert(`Success! ${email}'s password is now test123. They will be forced to change it upon login.`);
+      alert(`Success! ${email}'s password is now test123. They will be forced to set a new password upon login.`);
       loadAdminRoster();
     }
   };
@@ -628,7 +689,6 @@
 
     const { data: prof } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
-    // INTERCEPT: Force Password Change if Flagged
     if (prof?.must_change_password) {
       vAuth.classList.add('hidden');
       vMain.classList.add('hidden');
@@ -645,7 +705,6 @@
       document.getElementById('tabHehe').classList.remove('hidden');
     }
 
-    // Restore Open Shift
     const { data: open } = await db.from('attendance').select('*').eq('user_id', user.id).is('check_out', null).maybeSingle();
     if (open) {
       activeShift = open;
