@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>TimeFlow++ • Coding Legends HRIS</title>
+  <title>TimeFlow • Coding Legends HRIS</title>
 
   <!-- Apple Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230071e3'/%3E%3Cstop offset='100%25' stop-color='%2364D2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,SF Pro Display,sans-serif' font-weight='700' font-size='26' fill='%23ffffff' letter-spacing='-1'%3ECL%3C/text%3E%3C/svg%3E">
@@ -68,7 +68,7 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 1020px;
+      max-width: 1060px;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -255,6 +255,7 @@
       display: flex;
       gap: 8px;
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
     .sub-tab {
       padding: 8px 16px;
@@ -291,6 +292,11 @@
         </div>
       </div>
       <div class="nav-actions">
+        <!-- Admin Dashboard Switcher Tab -->
+        <div id="adminViewSwitcher" class="hidden" style="display: flex; gap: 6px; margin-right: 12px;">
+          <button id="switchPunchViewBtn" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">My Punch Clock</button>
+          <button id="switchAdminViewBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Admin Suite</button>
+        </div>
         <button id="themeToggle" class="icon-btn" title="Toggle Theme">☀️</button>
         <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 8px 14px; font-size: 12px;">Sign Out</button>
       </div>
@@ -310,7 +316,7 @@
           <button id="loginBtn" class="btn btn-primary" style="width: 100%;">Sign In to Workspace</button>
           <button id="setupBtn" class="btn btn-secondary" style="width: 100%;">First Time Provisioning</button>
         </div>
-        <p style="font-size: 12px; color: var(--text-sub); margin-top: 14px;">Authorized Staff: David, Stefan, Azmeer, Vishwa, Sahansa</p>
+        <p style="font-size: 12px; color: var(--text-sub); margin-top: 14px;">Administrators: David, Stefan, Azmeer, Vishwa, Sahansa</p>
       </div>
     </div>
 
@@ -328,14 +334,14 @@
       </div>
     </div>
 
-    <!-- 3. EMPLOYEE ATTENDANCE DASHBOARD -->
+    <!-- 3. ATTENDANCE DASHBOARD (EMPLOYEE & ADMIN SELF-PUNCH) -->
     <div id="view-employee" class="hidden">
       <div class="grid-2">
         
         <!-- PUNCH INTERFACE -->
         <div style="text-align: center; border-right: 1px solid var(--card-border); padding-right: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div id="userWelcome" style="font-size: 18px; font-weight: 700;">Employee Portal</div>
+            <div id="userWelcome" style="font-size: 18px; font-weight: 700;">Punch Portal</div>
             <div id="geoPill" class="status-pill pill-warn">Checking GPS...</div>
           </div>
 
@@ -351,7 +357,7 @@
           <div style="margin-top: 28px; text-align: left; border-top: 1px solid var(--card-border); padding-top: 18px;">
             <span style="font-size: 13px; font-weight: 600;">Account Credentials</span>
             <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <input type="password" id="selfNewPassword" class="input-box" placeholder="Update password..." style="margin-bottom: 0;">
+              <input type="password" id="selfNewPassword" class="input-box" placeholder="Update personal password..." style="margin-bottom: 0;">
               <button id="selfUpdatePwdBtn" class="btn btn-secondary" style="white-space: nowrap;">Change</button>
             </div>
           </div>
@@ -360,7 +366,7 @@
         <!-- USER PERSONAL LOGS -->
         <div>
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
-            <h3 style="font-size: 16px; font-weight: 700;">My Shift History</h3>
+            <h3 style="font-size: 16px; font-weight: 700;">Personal Shift History</h3>
             <span style="font-size: 12px; color: var(--text-sub);">Requirement: 9.00h/day</span>
           </div>
 
@@ -384,14 +390,16 @@
 
     <!-- 4. MANAGER & ADMIN METRICS ENGINE -->
     <div id="view-admin" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <div>
-          <h2 style="font-size: 22px; font-weight: 700;">Manager Analytics Center</h2>
-          <p style="font-size: 12px; color: var(--text-sub);">Live roster tracking, incomplete workdays, and system credentials</p>
+          <h2 style="font-size: 22px; font-weight: 700;">Admin & Analytics Suite</h2>
+          <p style="font-size: 12px; color: var(--text-sub);">Live roster tracking, incomplete workdays, credential overrides</p>
         </div>
         <div class="sub-tabs">
           <button class="sub-tab active" id="tabAnalytics">Workforce Analytics</button>
           <button class="sub-tab" id="tabSecurity">Staff Security</button>
+          <!-- Special Superuser Tab (Only visible to sahansa@codinglegends.io) -->
+          <button class="sub-tab hidden" id="tabManualEdit" style="border-color: var(--accent); color: var(--accent);">Manual Time Edit (Sahansa)</button>
         </div>
       </div>
 
@@ -449,6 +457,35 @@
             </thead>
             <tbody id="adminRosterList"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- 5. MANUAL EDIT SECTION: ONLY SAHANSA@CODINGLEGENDS.IO HAS WRITE PERMISSION -->
+      <div id="adminManualEditSection" class="hidden">
+        <div style="background: var(--badge-bg); border: 1px solid var(--accent); border-radius: 18px; padding: 20px; margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 4px;">Superuser Manual Time Override</h3>
+          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">
+            Notice: Only authorized to <b>sahansa@codinglegends.io</b>. Direct database timestamp adjustment.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: var(--text-sub);">Select Employee Shift</label>
+              <select id="editShiftSelect" class="input-box" style="margin-top: 4px;"></select>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--text-sub);">Adjust Check-In (Local ISO)</label>
+              <input type="datetime-local" id="manualCheckInInput" class="input-box" placeholder="[Superuser: Sahansa Only] check-in override" style="margin-top: 4px;">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--text-sub);">Adjust Check-Out (Local ISO)</label>
+              <input type="datetime-local" id="manualCheckOutInput" class="input-box" placeholder="[Superuser: Sahansa Only] check-out override" style="margin-top: 4px;">
+            </div>
+          </div>
+
+          <button id="btnSubmitManualEdit" class="btn btn-primary" style="margin-top: 8px;">
+            Commit Manual Timestamp Adjustment
+          </button>
         </div>
       </div>
 
@@ -538,12 +575,14 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
   const clientDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 4. BUSINESS & GEOFENCE SPECIFICATIONS
+  // 4. BUSINESS & ACCESS CONTROL CONFIGURATION
   const OFFICE_LAT = 6.867059730641403;
   const OFFICE_LNG = 79.90006807607381;
   const MAX_RADIUS_METERS = 200;
   const DEFAULT_PWD = "test123";
-  const ALLOWED_STAFF = [
+
+  // ALL 5 USERS DESIGNATED AS ADMINS
+  const ADMIN_STAFF = [
     'david@codinglegends.io',
     'stefan@codinglegends.io',
     'azmeer@codinglegends.io',
@@ -551,11 +590,15 @@
     'sahansa@codinglegends.io'
   ];
 
+  // ONLY SAHANSA CAN MANUALLY OVERRIDE / EDIT ATTENDANCE TIMESTAMPS
+  const SUPERUSER_MANUAL_EDITOR = 'sahansa@codinglegends.io';
+
   let activeSessionUser = null;
   let activeShift = null;
   let clockInterval = null;
   let isWithinOffice = false;
   let currentUserCoords = null;
+  let rawAttendanceCache = [];
 
   function setNotice(elementId, text, isError = true) {
     const el = document.getElementById(elementId);
@@ -635,8 +678,8 @@
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
     const password = document.getElementById('authPassword').value;
 
-    if (!ALLOWED_STAFF.includes(email)) {
-      return setNotice('authNotice', "Access restricted to authorized Coding Legends staff.");
+    if (!email.endsWith('@codinglegends.io')) {
+      return setNotice('authNotice', "Access restricted to @codinglegends.io accounts.");
     }
 
     setNotice('authNotice', "Authenticating...", false);
@@ -647,18 +690,17 @@
 
   async function performSetup() {
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
-    if (!ALLOWED_STAFF.includes(email)) {
-      return setNotice('authNotice', "Access restricted to authorized Coding Legends staff.");
+    if (!email.endsWith('@codinglegends.io')) {
+      return setNotice('authNotice', "Access restricted to @codinglegends.io accounts.");
     }
 
-    setNotice('authNotice', "Setting up employee account...", false);
+    setNotice('authNotice', "Provisioning account...", false);
     const { error } = await clientDB.auth.signUp({ email, password: DEFAULT_PWD });
     
     if (error && !error.message.includes("already registered")) {
       return setNotice('authNotice', error.message);
     }
 
-    // Auto sign-in with default password
     const { error: signErr } = await clientDB.auth.signInWithPassword({ email, password: DEFAULT_PWD });
     if (signErr) setNotice('authNotice', signErr.message);
     else verifySession();
@@ -687,12 +729,12 @@
     const { error } = await clientDB.auth.updateUser({ password: pwd });
     if (error) alert("Error: " + error.message);
     else {
-      alert("Master password updated successfully.");
+      alert("Password updated successfully.");
       document.getElementById('selfNewPassword').value = "";
     }
   }
 
-  // 6. ATTENDANCE ACTIONS
+  // 6. ATTENDANCE ACTIONS (ADMINS & EMPLOYEES)
   async function punchCheckIn() {
     if (!isWithinOffice) return alert("You must be within 200m of the office location.");
 
@@ -763,8 +805,8 @@
   // 7. MANAGER ANALYTICS MODULE
   async function loadAdminSuite() {
     const { data: allAttendance } = await clientDB.from('attendance').select('*').order('check_in', { ascending: false });
-    const { data: roster } = await clientDB.from('roster').select('*');
     const { data: profiles } = await clientDB.from('profiles').select('*');
+    rawAttendanceCache = allAttendance || [];
 
     // Metrics Calculations
     const todayStr = new Date().toISOString().split('T')[0];
@@ -780,7 +822,7 @@
       }
     });
 
-    const totalStaff = ALLOWED_STAFF.length;
+    const totalStaff = profiles ? profiles.length : ADMIN_STAFF.length;
     const presentCount = presentTodaySet.size;
     const absentCount = Math.max(0, totalStaff - presentCount);
 
@@ -813,27 +855,90 @@
     // Populate Staff Credentials Table
     const rosterBody = document.getElementById('adminRosterList');
     rosterBody.innerHTML = '';
-    ALLOWED_STAFF.forEach(email => {
-      const profile = profiles?.find(p => p.email === email);
-      const mustChange = profile ? profile.must_change_password : true;
+    profiles?.forEach(prof => {
+      const mustChange = prof.must_change_password;
+      const isAdminRole = ADMIN_STAFF.includes(prof.email);
       rosterBody.innerHTML += `
         <tr>
-          <td><b>${email}</b></td>
-          <td>${['david@codinglegends.io', 'stefan@codinglegends.io'].includes(email) ? 'Manager / Admin' : 'Employee'}</td>
+          <td><b>${prof.email}</b></td>
+          <td>${isAdminRole ? '<span style="color:var(--accent); font-weight:600;">Admin</span>' : 'Employee'}</td>
           <td>${mustChange ? '<span class="status-pill pill-warn">Default Key</span>' : '<span class="status-pill pill-ok">Custom Secure</span>'}</td>
           <td>
-            <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 11px;" onclick="adminResetPassword('${email}')">
+            <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 11px;" onclick="adminResetPassword('${prof.email}')">
               Reset to test123
             </button>
           </td>
         </tr>`;
     });
+
+    // Populate Manual Edit Selector for Sahansa
+    if (activeSessionUser.email === SUPERUSER_MANUAL_EDITOR) {
+      const selectEl = document.getElementById('editShiftSelect');
+      selectEl.innerHTML = '<option value="">-- Choose Shift Record to Edit --</option>';
+      allAttendance?.forEach(item => {
+        const d = new Date(item.check_in).toLocaleDateString();
+        selectEl.innerHTML += `<option value="${item.id}">${item.user_email} | ${d} (${item.work_hours || 'In-progress'}h)</option>`;
+      });
+    }
   }
+
+  // Sahansa Manual Time Edit Handler
+  document.getElementById('editShiftSelect').addEventListener('change', (e) => {
+    const shiftId = e.target.value;
+    const record = rawAttendanceCache.find(r => r.id === shiftId);
+    if (!record) return;
+
+    if (record.check_in) {
+      document.getElementById('manualCheckInInput').value = new Date(record.check_in).toISOString().slice(0, 16);
+    }
+    if (record.check_out) {
+      document.getElementById('manualCheckOutInput').value = new Date(record.check_out).toISOString().slice(0, 16);
+    } else {
+      document.getElementById('manualCheckOutInput').value = '';
+    }
+  });
+
+  document.getElementById('btnSubmitManualEdit').addEventListener('click', async () => {
+    // SECURITY GUARD: Ensure only sahansa@codinglegends.io executes manual edits
+    if (activeSessionUser.email !== SUPERUSER_MANUAL_EDITOR) {
+      return alert("Security Violation: Only sahansa@codinglegends.io has authorization to manually override attendance times.");
+    }
+
+    const shiftId = document.getElementById('editShiftSelect').value;
+    const inVal = document.getElementById('manualCheckInInput').value;
+    const outVal = document.getElementById('manualCheckOutInput').value;
+
+    if (!shiftId || !inVal) return alert("Select a shift and define check-in.");
+
+    const inDate = new Date(inVal);
+    let outDate = outVal ? new Date(outVal) : null;
+    let hoursWorked = null;
+    let is9h = false;
+
+    if (outDate) {
+      hoursWorked = parseFloat(((outDate - inDate) / 36e5).toFixed(2));
+      is9h = hoursWorked >= 9.0;
+    }
+
+    const { error } = await clientDB.from('attendance').update({
+      check_in: inDate.toISOString(),
+      check_out: outDate ? outDate.toISOString() : null,
+      work_hours: hoursWorked,
+      completed_9h: is9h
+    }).eq('id', shiftId);
+
+    if (error) {
+      alert("Update error: " + error.message);
+    } else {
+      alert("Shift timestamp manually adjusted by Sahansa.");
+      loadAdminSuite();
+    }
+  });
 
   window.adminResetPassword = async function(email) {
     if (!confirm(`Are you sure you want to reset password for ${email}?`)) return;
     await clientDB.from('profiles').update({ must_change_password: true }).eq('email', email);
-    alert(`Password reset trigger flagged for ${email}. Staff member will be prompted to reset upon entry.`);
+    alert(`Password reset trigger flagged for ${email}. User must set new password upon next sign in.`);
     loadAdminSuite();
   };
 
@@ -846,6 +951,7 @@
     const viewEmp = document.getElementById('view-employee');
     const viewAdm = document.getElementById('view-admin');
     const logoutBtn = document.getElementById('logoutBtn');
+    const adminSwitcher = document.getElementById('adminViewSwitcher');
 
     if (!session) {
       activeSessionUser = null;
@@ -856,6 +962,7 @@
       viewEmp.classList.add('hidden');
       viewAdm.classList.add('hidden');
       logoutBtn.classList.add('hidden');
+      adminSwitcher.classList.add('hidden');
       return;
     }
 
@@ -869,6 +976,7 @@
       viewAuth.classList.add('hidden');
       viewEmp.classList.add('hidden');
       viewAdm.classList.add('hidden');
+      adminSwitcher.classList.add('hidden');
       viewPwd.classList.remove('hidden');
       return;
     }
@@ -876,34 +984,45 @@
     viewAuth.classList.add('hidden');
     viewPwd.classList.add('hidden');
 
-    const isAdmin = ['david@codinglegends.io', 'stefan@codinglegends.io'].includes(activeSessionUser.email);
+    // Admin authorization check: David, Stefan, Azmeer, Vishwa, and Sahansa
+    const isAdmin = ADMIN_STAFF.includes(activeSessionUser.email);
+
+    // Initialize geofencing and load user's open shift (available to both admins and employees)
+    const { data: openShift } = await clientDB.from('attendance')
+      .select('*')
+      .eq('user_id', activeSessionUser.id)
+      .is('check_out', null)
+      .order('check_in', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (openShift) {
+      activeShift = openShift;
+      clearInterval(clockInterval);
+      clockInterval = setInterval(renderClock, 1000);
+    }
+    startGeofencing();
+    loadUserLogs();
 
     if (isAdmin) {
+      adminSwitcher.classList.remove('hidden');
+      
+      // Sahansa-only manual edit button check
+      if (activeSessionUser.email === SUPERUSER_MANUAL_EDITOR) {
+        document.getElementById('tabManualEdit').classList.remove('hidden');
+      } else {
+        document.getElementById('tabManualEdit').classList.add('hidden');
+      }
+
+      // Default admins to Admin Analytics Suite
       viewEmp.classList.add('hidden');
       viewAdm.classList.remove('hidden');
       loadAdminSuite();
     } else {
+      adminSwitcher.classList.add('hidden');
       viewAdm.classList.add('hidden');
       viewEmp.classList.remove('hidden');
       document.getElementById('userWelcome').innerText = `Staff: ${activeSessionUser.email.split('@')[0]}`;
-      
-      // Load Open Shift
-      const { data: openShift } = await clientDB.from('attendance')
-        .select('*')
-        .eq('user_id', activeSessionUser.id)
-        .is('check_out', null)
-        .order('check_in', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (openShift) {
-        activeShift = openShift;
-        clearInterval(clockInterval);
-        clockInterval = setInterval(renderClock, 1000);
-      }
-
-      startGeofencing();
-      loadUserLogs();
     }
   }
 
@@ -919,19 +1038,49 @@
     verifySession();
   });
 
+  // Admin Top-Nav View Switcher
+  document.getElementById('switchPunchViewBtn').addEventListener('click', () => {
+    document.getElementById('view-admin').classList.add('hidden');
+    document.getElementById('view-employee').classList.remove('hidden');
+    document.getElementById('switchPunchViewBtn').className = "btn btn-primary";
+    document.getElementById('switchAdminViewBtn').className = "btn btn-secondary";
+    document.getElementById('userWelcome').innerText = `Admin Punch: ${activeSessionUser.email.split('@')[0]}`;
+  });
+
+  document.getElementById('switchAdminViewBtn').addEventListener('click', () => {
+    document.getElementById('view-employee').classList.add('hidden');
+    document.getElementById('view-admin').classList.remove('hidden');
+    document.getElementById('switchAdminViewBtn').className = "btn btn-primary";
+    document.getElementById('switchPunchViewBtn').className = "btn btn-secondary";
+    loadAdminSuite();
+  });
+
   // Admin Sub Tabs
   document.getElementById('tabAnalytics').addEventListener('click', () => {
-    document.getElementById('tabAnalytics').classList.add('active');
-    document.getElementById('tabSecurity').classList.remove('active');
+    document.getElementById('tabAnalytics').className = 'sub-tab active';
+    document.getElementById('tabSecurity').className = 'sub-tab';
+    document.getElementById('tabManualEdit').className = 'sub-tab';
     document.getElementById('adminAnalyticsSection').classList.remove('hidden');
     document.getElementById('adminSecuritySection').classList.add('hidden');
+    document.getElementById('adminManualEditSection').classList.add('hidden');
   });
 
   document.getElementById('tabSecurity').addEventListener('click', () => {
-    document.getElementById('tabSecurity').classList.add('active');
-    document.getElementById('tabAnalytics').classList.remove('active');
+    document.getElementById('tabSecurity').className = 'sub-tab active';
+    document.getElementById('tabAnalytics').className = 'sub-tab';
+    document.getElementById('tabManualEdit').className = 'sub-tab';
     document.getElementById('adminSecuritySection').classList.remove('hidden');
     document.getElementById('adminAnalyticsSection').classList.add('hidden');
+    document.getElementById('adminManualEditSection').classList.add('hidden');
+  });
+
+  document.getElementById('tabManualEdit').addEventListener('click', () => {
+    document.getElementById('tabManualEdit').className = 'sub-tab active';
+    document.getElementById('tabAnalytics').className = 'sub-tab';
+    document.getElementById('tabSecurity').className = 'sub-tab';
+    document.getElementById('adminManualEditSection').classList.remove('hidden');
+    document.getElementById('adminAnalyticsSection').classList.add('hidden');
+    document.getElementById('adminSecuritySection').classList.add('hidden');
   });
 
   verifySession();
