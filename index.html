@@ -81,11 +81,8 @@
       border-radius: 6px;
       letter-spacing: -0.5px;
     }
-    .brand {
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: -0.2px;
-    }
+    .brand { font-weight: 600; font-size: 14px; letter-spacing: -0.2px; }
+    
     .theme-toggle {
       background: var(--input-bg);
       border: 1px solid var(--border);
@@ -126,11 +123,7 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-    .btn:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-secondary { background: var(--input-bg); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
@@ -169,11 +162,7 @@
       letter-spacing: -0.5px;
     }
 
-    .table-container {
-      margin-top: 20px;
-      max-height: 220px;
-      overflow-y: auto;
-    }
+    .table-container { margin-top: 20px; max-height: 220px; overflow-y: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     th { color: var(--subtext); padding-bottom: 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
     td { padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -202,21 +191,34 @@
     <button class="theme-toggle" id="themeBtn" type="button">🌙</button>
   </div>
 
-  <!-- AUTH FORM -->
+  <!-- 1. LOGIN / FIRST-TIME REGISTER VIEW -->
   <div id="authSection">
-    <h1>Welcome</h1>
-    <p class="desc">Employee & Manager Portal</p>
+    <h1>Sign In</h1>
+    <p class="desc">Default setup password is: <b>test123</b></p>
     <div id="authNotice" class="status-msg"></div>
 
     <div class="input-group">
       <input type="email" id="email" placeholder="name@company.com" autocomplete="email">
-      <input type="password" id="password" placeholder="Password (min 6 characters)" autocomplete="current-password">
+      <input type="password" id="password" placeholder="Password (default: test123)" autocomplete="current-password">
       <button class="btn btn-primary" id="btnLogin" type="button">Sign In</button>
-      <button class="btn btn-secondary" id="btnRegister" type="button">Create Account</button>
+      <button class="btn btn-secondary" id="btnRegister" type="button">First Time Setup</button>
     </div>
   </div>
 
-  <!-- ATTENDANCE DASHBOARD -->
+  <!-- 2. MANDATORY PASSWORD CHANGE VIEW -->
+  <div id="pwdChangeSection" class="hidden">
+    <h1>Update Password</h1>
+    <p class="desc">You must change your default password to continue.</p>
+    <div id="pwdNotice" class="status-msg"></div>
+
+    <div class="input-group">
+      <input type="password" id="newPassword" placeholder="Enter new secure password">
+      <input type="password" id="confirmPassword" placeholder="Confirm new password">
+      <button class="btn btn-primary" id="btnUpdatePwd" type="button">Save New Password</button>
+    </div>
+  </div>
+
+  <!-- 3. ATTENDANCE DASHBOARD -->
   <div id="dashSection" class="hidden">
     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
       <div>
@@ -258,7 +260,7 @@
 </div>
 
 <script>
-  // 1. SAFE THEME TOGGLER
+  // 1. THEME TOGGLE
   const themeBtn = document.getElementById('themeBtn');
   themeBtn.addEventListener('click', () => {
     const isDark = document.body.getAttribute('data-theme') === 'dark';
@@ -266,30 +268,29 @@
     themeBtn.innerText = isDark ? '🌙' : '☀️';
   });
 
-  // 2. SUPABASE INITIALIZATION (Using non-conflicting identifier 'clientDB')
+  // 2. SUPABASE INITIALIZATION
   const SUPABASE_URL = "https://ssxbdhcbhhzqkqrajzin.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
-
   const clientDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // 3. GEOFENCE CONFIG (Colombo Office: 6.9072, 79.8498)
+  // 3. GEOFENCE CONFIG (6.9072, 79.8498)
   const OFFICE_LAT = 6.907203859406421;
   const OFFICE_LNG = 79.84985425058369;
   const MAX_RADIUS_METERS = 200;
+  const DEFAULT_PWD = "test123";
 
   let currentUser = null;
   let activeShift = null;
   let timerInterval = null;
   let isWithinBounds = false;
 
-  const noticeBox = document.getElementById('authNotice');
-  function showMessage(text, isError = true) {
-    if (!noticeBox) return;
-    noticeBox.innerText = text;
-    noticeBox.className = isError ? "status-msg msg-err" : "status-msg msg-ok";
+  function showMessage(targetId, text, isError = true) {
+    const box = document.getElementById(targetId);
+    if (!box) return;
+    box.innerText = text;
+    box.className = isError ? "status-msg msg-err" : "status-msg msg-ok";
   }
 
-  // Haversine formula for geofence validation
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -328,7 +329,7 @@
         const badge = document.getElementById('locBadge');
         badge.className = "status-badge badge-error";
         badge.innerText = "Location permission blocked";
-        document.getElementById('geoAccuracy').innerText = "Allow location access in browser";
+        document.getElementById('geoAccuracy').innerText = "Allow location in browser";
       },
       { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
     );
@@ -356,23 +357,29 @@
     document.getElementById('timerDisplay').innerText = `${hrs}:${mins}:${secs}`;
   }
 
-  // 4. AUTHENTICATION HANDLERS
+  // 4. AUTHENTICATION & FIRST-TIME SETUP
   async function handleRegister() {
     const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+    if (!email) return showMessage('authNotice', "Enter your work email.");
 
-    if (!email || !password) return showMessage("Please enter email and password.");
-    if (password.length < 6) return showMessage("Password must be at least 6 characters.");
+    showMessage('authNotice', "Provisioning account...", false);
 
-    showMessage("Registering account...", false);
-    const { data, error } = await clientDB.auth.signUp({ email, password });
+    // Initial sign-up always assigns the default password
+    const { data, error } = await clientDB.auth.signUp({
+      email: email,
+      password: DEFAULT_PWD
+    });
 
     if (error) {
-      showMessage(error.message, true);
-    } else if (data.user && !data.session) {
-      showMessage("Account created! Check Supabase Auth to confirm immediate login is enabled.", false);
+      showMessage('authNotice', error.message, true);
     } else {
-      checkSession();
+      showMessage('authNotice', "Account created! Signing in...", false);
+      const { error: loginErr } = await clientDB.auth.signInWithPassword({
+        email: email,
+        password: DEFAULT_PWD
+      });
+      if (loginErr) showMessage('authNotice', loginErr.message, true);
+      else checkSession();
     }
   }
 
@@ -380,16 +387,48 @@
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    if (!email || !password) return showMessage("Please enter email and password.");
+    if (!email || !password) return showMessage('authNotice', "Please fill in email and password.");
 
-    showMessage("Signing in...", false);
+    showMessage('authNotice', "Signing in...", false);
     const { error } = await clientDB.auth.signInWithPassword({ email, password });
 
     if (error) {
-      showMessage(error.message, true);
+      showMessage('authNotice', error.message, true);
     } else {
       checkSession();
     }
+  }
+
+  // 5. MANDATORY PASSWORD UPDATE
+  async function handlePasswordUpdate() {
+    const newPwd = document.getElementById('newPassword').value;
+    const confirmPwd = document.getElementById('confirmPassword').value;
+
+    if (!newPwd || newPwd.length < 6) {
+      return showMessage('pwdNotice', "Password must be at least 6 characters.");
+    }
+    if (newPwd === DEFAULT_PWD) {
+      return showMessage('pwdNotice', "New password cannot be the default test123.");
+    }
+    if (newPwd !== confirmPwd) {
+      return showMessage('pwdNotice', "Passwords do not match.");
+    }
+
+    showMessage('pwdNotice', "Saving password...", false);
+
+    // Update password in Supabase Auth
+    const { error: authErr } = await clientDB.auth.updateUser({ password: newPwd });
+    if (authErr) return showMessage('pwdNotice', authErr.message, true);
+
+    // Mark password as changed in profile table
+    await clientDB.from('profiles').upsert({
+      id: currentUser.id,
+      email: currentUser.email,
+      must_change_password: false
+    });
+
+    alert("Password updated successfully! Welcome to TimeFlow.");
+    checkSession();
   }
 
   async function signOut() {
@@ -398,7 +437,7 @@
     checkSession();
   }
 
-  // 5. ATTENDANCE ACTIONS
+  // 6. ATTENDANCE CLOCK IN / OUT
   async function punchTime(action) {
     if (!isWithinBounds) return alert("You must be within 200m of the office location.");
 
@@ -470,13 +509,34 @@
 
   async function checkSession() {
     const { data: { session } } = await clientDB.auth.getSession();
+    
     if (session) {
       currentUser = session.user;
+
+      // Check if user still needs to update their initial password
+      const { data: profile } = await clientDB
+        .from('profiles')
+        .select('must_change_password')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      const mustChange = profile ? profile.must_change_password : false;
+
+      if (mustChange) {
+        // Enforce mandatory password change screen
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('dashSection').classList.add('hidden');
+        document.getElementById('pwdChangeSection').classList.remove('hidden');
+        return;
+      }
+
+      // Show Main Punch Dashboard
       document.getElementById('authSection').classList.add('hidden');
+      document.getElementById('pwdChangeSection').classList.add('hidden');
       document.getElementById('dashSection').classList.remove('hidden');
       document.getElementById('userGreeting').innerText = `Hi, ${currentUser.email.split('@')[0]}`;
 
-      // Find any active unclosed shift
+      // Look up any active shift
       const { data: openShift } = await clientDB
         .from('attendance')
         .select('*')
@@ -499,13 +559,15 @@
       activeShift = null;
       clearInterval(timerInterval);
       document.getElementById('authSection').classList.remove('hidden');
+      document.getElementById('pwdChangeSection').classList.add('hidden');
       document.getElementById('dashSection').classList.add('hidden');
     }
   }
 
-  // 6. EVENT LISTENERS
+  // 7. EVENT LISTENERS
   document.getElementById('btnLogin').addEventListener('click', handleLogin);
   document.getElementById('btnRegister').addEventListener('click', handleRegister);
+  document.getElementById('btnUpdatePwd').addEventListener('click', handlePasswordUpdate);
   document.getElementById('btnLogout').addEventListener('click', signOut);
   document.getElementById('btnCheckIn').addEventListener('click', () => punchTime('in'));
   document.getElementById('btnCheckOut').addEventListener('click', () => punchTime('out'));
