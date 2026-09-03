@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>TimeFlow • Coding Legends</title>
+  <title>TimeFlow++ • Coding Legends</title>
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230071e3'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,sans-serif' font-weight='700' font-size='26' fill='%23ffffff'%3ECL%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -34,49 +34,50 @@
       --segmented-bg: rgba(118, 118, 128, 0.24);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px; transition: background 0.2s; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px; transition: background 0.2s; }
     
-    .container { width: 100%; max-width: 820px; }
-    .card { background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 16px; }
+    .container { width: 100%; max-width: 860px; }
+    .card { background: var(--card-bg); border-radius: 22px; border: 1px solid var(--border); padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 16px; }
 
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
-    .badge { background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 7px; font-size: 11px; font-weight: 700; }
 
-    .segmented-control { display: inline-flex; background: var(--segmented-bg); padding: 3px; border-radius: 9px; gap: 2px; }
-    .segmented-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--subtext); cursor: pointer; }
+    .segmented-control { display: inline-flex; background: var(--segmented-bg); padding: 3px; border-radius: 10px; gap: 2px; }
+    .segmented-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--subtext); cursor: pointer; transition: all 0.15s; }
     .segmented-btn.active { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
 
-    .btn { padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .btn { padding: 10px 18px; border-radius: 11px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
     .btn:active { opacity: 0.7; }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-secondary { background: var(--segmented-bg); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
 
-    .input-box { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 14px; outline: none; margin-bottom: 10px; }
+    .input-box { width: 100%; padding: 12px 14px; border-radius: 11px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 14px; outline: none; margin-bottom: 10px; }
     .input-box:focus { border-color: var(--accent); }
 
-    .timer { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; margin: 12px 0; }
+    .timer { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -1px; margin: 12px 0; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
     .pill-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
     .pill-bad { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
     .pill-warn { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
 
     .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-    @media(max-width: 600px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
-    .stat-box { background: var(--input-bg); padding: 12px; border-radius: 12px; }
-    .stat-title { font-size: 11px; color: var(--subtext); }
-    .stat-num { font-size: 20px; font-weight: 700; margin-top: 4px; }
+    @media(max-width: 650px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    .stat-box { background: var(--input-bg); padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
+    .stat-title { font-size: 12px; color: var(--subtext); }
+    .stat-num { font-size: 22px; font-weight: 700; margin-top: 4px; }
 
     table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-    th { text-align: left; color: var(--subtext); padding: 8px 10px; font-weight: 500; border-bottom: 1px solid var(--border); }
-    td { padding: 10px; border-bottom: 1px solid var(--border); }
+    th { text-align: left; color: var(--subtext); padding: 10px; font-weight: 500; border-bottom: 1px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 
     .hidden { display: none !important; }
-    .notice { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+    .notice { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; }
     .notice-err { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
+    .notice-ok { background: rgba(52, 199, 89, 0.12); color: var(--success); }
   </style>
 </head>
 <body data-theme="light">
@@ -94,14 +95,14 @@
       </div>
     </div>
 
-    <!-- VIEW 1: AUTH -->
-    <div id="view-auth" style="max-width: 320px; margin: 20px auto; text-align: center;">
+    <!-- 1. AUTH SCREEN -->
+    <div id="view-auth" style="max-width: 320px; margin: 24px auto; text-align: center;">
       <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Sign In</h2>
-      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Default password: test123</p>
+      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Initial password: <b>test123</b></p>
       <div id="authNotice" class="notice notice-err hidden"></div>
 
-      <input type="email" id="authEmail" class="input-box" placeholder="name@codinglegends.io">
-      <input type="password" id="authPassword" class="input-box" placeholder="Password">
+      <input type="email" id="authEmail" class="input-box" placeholder="name@codinglegends.io" autocomplete="email">
+      <input type="password" id="authPassword" class="input-box" placeholder="Password" autocomplete="current-password">
 
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <button id="loginBtn" class="btn btn-primary">Sign In</button>
@@ -109,35 +110,37 @@
       </div>
     </div>
 
-    <!-- VIEW 2: PASSWORD CHANGE -->
-    <div id="view-pwd" class="hidden" style="max-width: 320px; margin: 20px auto; text-align: center;">
-      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Update Password</h2>
-      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Set a new password to continue.</p>
+    <!-- 2. MANDATORY PASSWORD UPDATE INTERCEPTOR -->
+    <div id="view-pwd" class="hidden" style="max-width: 340px; margin: 24px auto; text-align: center;">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Create Password</h2>
+      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">You must change your password from test123 to continue.</p>
       <div id="pwdNotice" class="notice notice-err hidden"></div>
 
-      <input type="password" id="newPwd1" class="input-box" placeholder="New password">
-      <input type="password" id="newPwd2" class="input-box" placeholder="Confirm password">
-      <button id="savePwdBtn" class="btn btn-primary" style="width: 100%;">Save Password</button>
+      <input type="password" id="newPwd1" class="input-box" placeholder="New Password (min 6 chars)">
+      <input type="password" id="newPwd2" class="input-box" placeholder="Confirm Password">
+      <button id="savePwdBtn" class="btn btn-primary" style="width: 100%;">Set Password & Access</button>
     </div>
 
-    <!-- VIEW 3: MAIN APP INTERFACE -->
+    <!-- 3. MAIN APPLICATION INTERFACE -->
     <div id="view-main" class="hidden">
-      <!-- Role Navigation Switches -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+      
+      <!-- Top Navigation Tabs -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 14px; flex-wrap: wrap; gap: 10px;">
         <div id="userTag" style="font-size: 13px; font-weight: 600;"></div>
         <div class="segmented-control" id="navTabs">
           <button class="segmented-btn active" id="tabPunch">Punch Clock</button>
-          <button class="segmented-btn hidden" id="tabAnalytics">Analytics</button>
+          <button class="segmented-btn" id="tabReports">Reports</button>
+          <button class="segmented-btn" id="tabAdmin">Admin</button>
           <button class="segmented-btn hidden" id="tabHehe">HEHE</button>
         </div>
       </div>
 
-      <!-- TAB: PUNCH CLOCK -->
+      <!-- TAB A: PUNCH CLOCK -->
       <div id="section-punch">
-        <div style="text-align: center; padding: 20px 0;">
+        <div style="text-align: center; padding: 18px 0;">
           <div id="geoPill" class="pill pill-warn">Checking location...</div>
           <div id="timer" class="timer">00:00:00</div>
-          <div id="geoDist" style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">Office Radius: 200m</div>
+          <div id="geoDist" style="font-size: 12px; color: var(--subtext); margin-bottom: 18px;">Office Radius: 200m</div>
 
           <div style="display: flex; gap: 10px; justify-content: center; max-width: 320px; margin: 0 auto;">
             <button id="btnIn" class="btn btn-primary" style="flex: 1;" disabled>Check In</button>
@@ -145,49 +148,64 @@
           </div>
         </div>
 
-        <h3 style="font-size: 14px; font-weight: 600; margin-top: 24px;">Recent Logs</h3>
+        <h3 style="font-size: 14px; font-weight: 600; margin-top: 24px;">My Shift History</h3>
         <div style="overflow-x: auto;">
           <table>
-            <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Hours</th></tr></thead>
+            <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
             <tbody id="myLogs"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- TAB: ANALYTICS (ADMINS) -->
-      <div id="section-analytics" class="hidden">
+      <!-- TAB B: REPORTS ENGINE (DAILY / WEEKLY / MONTHLY) -->
+      <div id="section-reports" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div class="segmented-control">
+            <button class="segmented-btn active" id="btnRepDaily">Daily</button>
+            <button class="segmented-btn" id="btnRepWeekly">Weekly</button>
+            <button class="segmented-btn" id="btnRepMonthly">Monthly</button>
+          </div>
+          <button id="btnExportCSV" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">↓ Export CSV</button>
+        </div>
+
         <div class="grid-4">
-          <div class="stat-box"><div class="stat-title">Roster</div><div class="stat-num" id="statTotal">5</div></div>
-          <div class="stat-box"><div class="stat-title">Present Today</div><div class="stat-num" id="statPresent" style="color:var(--success);">0</div></div>
-          <div class="stat-box"><div class="stat-title">Absent Today</div><div class="stat-num" id="statAbsent" style="color:var(--danger);">5</div></div>
-          <div class="stat-box"><div class="stat-title">&lt; 9h Shifts</div><div class="stat-num" id="statUnder" style="color:var(--warning);">0</div></div>
+          <div class="stat-box"><div class="stat-title">Period Logged Shifts</div><div class="stat-num" id="repTotalShifts">0</div></div>
+          <div class="stat-box"><div class="stat-title">Total Hours Worked</div><div class="stat-num" id="repTotalHours">0.0h</div></div>
+          <div class="stat-box"><div class="stat-title">Completed 9h Days</div><div class="stat-num" id="repCompleted9h" style="color:var(--success);">0</div></div>
+          <div class="stat-box"><div class="stat-title">Under-Hours Days</div><div class="stat-num" id="repUnderhours" style="color:var(--warning);">0</div></div>
         </div>
 
-        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Staff Log History</h3>
-        <div style="overflow-x: auto; max-height: 280px;">
+        <div style="overflow-x: auto; max-height: 380px;">
           <table>
-            <thead><tr><th>Staff</th><th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Status</th></tr></thead>
-            <tbody id="companyLogs"></tbody>
-          </table>
-        </div>
-
-        <h3 style="font-size: 14px; font-weight: 600; margin: 24px 0 8px 0;">Reset Passwords</h3>
-        <div style="overflow-x: auto;">
-          <table>
-            <thead><tr><th>Staff</th><th>Role</th><th>Action</th></tr></thead>
-            <tbody id="rosterList"></tbody>
+            <thead><tr><th>Employee</th><th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Target (9h)</th></tr></thead>
+            <tbody id="reportsBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- TAB: HEHE (SAHANSA ONLY) -->
+      <!-- TAB C: ADMIN & CREDENTIALS -->
+      <div id="section-admin" class="hidden">
+        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Staff Account Security</h3>
+        <p style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">
+          Clicking "Reset" resets their password to <b>test123</b> and forces a password change upon login.
+        </p>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead><tr><th>Employee</th><th>Role</th><th>Status</th><th>Security Action</th></tr></thead>
+            <tbody id="adminRosterBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB D: HEHE (SAHANSA ONLY) -->
       <div id="section-hehe" class="hidden">
         <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">HEHE</h3>
         <p style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">Manual timestamp adjustment workspace.</p>
 
-        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 400px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 420px;">
           <div>
-            <label style="font-size: 12px; color: var(--subtext);">Select Shift</label>
+            <label style="font-size: 12px; color: var(--subtext);">Select Shift Record</label>
             <select id="heheShiftSelect" class="input-box"></select>
           </div>
           <div>
@@ -207,7 +225,7 @@
 </div>
 
 <script>
-  // 1. SUPABASE CLIENT
+  // SUPABASE CONFIGURATION
   const SUPABASE_URL = "https://ssxbdhcbhhzqkqrajzin.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -216,16 +234,17 @@
   const OFFICE_LNG = 79.90006807607381;
   const RADIUS = 200;
   const DEFAULT_PWD = "test123";
-  const ADMIN_USERS = ['david@codinglegends.io','stefan@codinglegends.io','azmeer@codinglegends.io','vishwa@codinglegends.io','sahansa@codinglegends.io'];
+  const STAFF = ['david@codinglegends.io','stefan@codinglegends.io','azmeer@codinglegends.io','vishwa@codinglegends.io','sahansa@codinglegends.io'];
   const HEHE_USER = 'sahansa@codinglegends.io';
 
   let user = null;
   let activeShift = null;
   let timerId = null;
   let inBounds = false;
-  let cachedLogs = [];
+  let allAttendanceData = [];
+  let currentReportFilter = 'daily';
 
-  // Theme Toggler
+  // THEME SWITCHER
   document.getElementById('themeToggle').addEventListener('click', () => {
     const isDark = document.body.getAttribute('data-theme') === 'dark';
     document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
@@ -249,13 +268,13 @@
         
         const pill = document.getElementById('geoPill');
         pill.className = inBounds ? "pill pill-ok" : "pill pill-bad";
-        pill.innerText = inBounds ? `● In Office (${Math.round(dist)}m)` : `✕ Outside Office (${Math.round(dist)}m)`;
+        pill.innerText = inBounds ? `● In Office (${Math.round(dist)}m)` : `✕ Outside (${Math.round(dist)}m)`;
 
         document.getElementById('btnIn').disabled = activeShift || !inBounds;
         document.getElementById('btnOut').disabled = !activeShift || !inBounds;
       },
       () => {
-        document.getElementById('geoPill').innerText = "GPS Access Denied";
+        document.getElementById('geoPill').innerText = "GPS Blocked";
       },
       { enableHighAccuracy: true }
     );
@@ -270,43 +289,82 @@
     document.getElementById('timer').innerText = `${h}:${m}:${s}`;
   }
 
-  // Auth Operations
+  // AUTH HANDLERS
   document.getElementById('loginBtn').addEventListener('click', async () => {
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
     const password = document.getElementById('authPassword').value;
+    const notice = document.getElementById('authNotice');
+    notice.classList.add('hidden');
+
     const { error } = await db.auth.signInWithPassword({ email, password });
     if (error) {
-      document.getElementById('authNotice').innerText = error.message;
-      document.getElementById('authNotice').classList.remove('hidden');
-    } else checkUser();
+      notice.innerText = error.message;
+      notice.classList.remove('hidden');
+    } else {
+      checkSession();
+    }
   });
 
   document.getElementById('setupBtn').addEventListener('click', async () => {
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
+    const notice = document.getElementById('authNotice');
+    notice.classList.add('hidden');
+
+    if (!STAFF.includes(email)) {
+      notice.innerText = "Only Coding Legends roster accounts can register.";
+      notice.classList.remove('hidden');
+      return;
+    }
+
     await db.auth.signUp({ email, password: DEFAULT_PWD });
     const { error } = await db.auth.signInWithPassword({ email, password: DEFAULT_PWD });
     if (error) {
-      document.getElementById('authNotice').innerText = error.message;
-      document.getElementById('authNotice').classList.remove('hidden');
-    } else checkUser();
+      notice.innerText = error.message;
+      notice.classList.remove('hidden');
+    } else {
+      checkSession();
+    }
   });
 
   document.getElementById('savePwdBtn').addEventListener('click', async () => {
     const p1 = document.getElementById('newPwd1').value;
     const p2 = document.getElementById('newPwd2').value;
-    if (p1.length < 6 || p1 === DEFAULT_PWD || p1 !== p2) return alert("Invalid password");
+    const notice = document.getElementById('pwdNotice');
+    notice.classList.add('hidden');
 
-    await db.auth.updateUser({ password: p1 });
-    await db.from('profiles').update({ must_change_password: false }).eq('id', user.id);
-    checkUser();
+    if (p1.length < 6) {
+      notice.innerText = "Password must be at least 6 characters.";
+      notice.classList.remove('hidden');
+      return;
+    }
+    if (p1 === DEFAULT_PWD) {
+      notice.innerText = "New password cannot be test123.";
+      notice.classList.remove('hidden');
+      return;
+    }
+    if (p1 !== p2) {
+      notice.innerText = "Passwords do not match.";
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    const { error } = await db.auth.updateUser({ password: p1 });
+    if (error) {
+      notice.innerText = error.message;
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    await db.from('profiles').upsert({ id: user.id, email: user.email, must_change_password: false });
+    checkSession();
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     await db.auth.signOut();
-    checkUser();
+    checkSession();
   });
 
-  // Punch Events
+  // PUNCH IN/OUT
   document.getElementById('btnIn').addEventListener('click', async () => {
     const { data, error } = await db.from('attendance').insert([{
       user_id: user.id,
@@ -320,7 +378,7 @@
       timerId = setInterval(runClock, 1000);
       document.getElementById('btnIn').disabled = true;
       document.getElementById('btnOut').disabled = false;
-      loadUserLogs();
+      loadMyLogs();
     }
   });
 
@@ -340,10 +398,10 @@
     document.getElementById('timer').innerText = "00:00:00";
     document.getElementById('btnIn').disabled = false;
     document.getElementById('btnOut').disabled = true;
-    loadUserLogs();
+    loadMyLogs();
   });
 
-  async function loadUserLogs() {
+  async function loadMyLogs() {
     const { data } = await db.from('attendance').select('*').eq('user_id', user.id).order('check_in', { ascending: false });
     const tbody = document.getElementById('myLogs');
     tbody.innerHTML = '';
@@ -354,67 +412,126 @@
           <td>${new Date(r.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
           <td>${r.check_out ? new Date(r.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
           <td><b>${r.work_hours ? r.work_hours + 'h' : 'Active'}</b></td>
+          <td>${r.work_hours ? (r.completed_9h ? '<span class="pill pill-ok">9h+ Met</span>' : '<span class="pill pill-warn">Under 9h</span>') : '<span class="pill pill-warn">In Progress</span>'}</td>
         </tr>`;
     });
   }
 
-  async function loadAnalytics() {
+  // REPORTS & CSV EXPORT
+  async function loadReports(timeframe = 'daily') {
+    currentReportFilter = timeframe;
     const { data: all } = await db.from('attendance').select('*').order('check_in', { ascending: false });
-    const { data: profiles } = await db.from('profiles').select('*');
-    cachedLogs = all || [];
+    allAttendanceData = all || [];
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const present = new Set(cachedLogs.filter(l => l.check_in.startsWith(todayStr)).map(l => l.user_email));
-    const under = cachedLogs.filter(l => l.work_hours && l.work_hours < 9.0).length;
+    const now = new Date();
+    let filtered = allAttendanceData;
 
-    document.getElementById('statTotal').innerText = ADMIN_USERS.length;
-    document.getElementById('statPresent').innerText = present.size;
-    document.getElementById('statAbsent').innerText = Math.max(0, ADMIN_USERS.length - present.size);
-    document.getElementById('statUnder').innerText = under;
+    if (timeframe === 'daily') {
+      const todayStr = now.toISOString().split('T')[0];
+      filtered = allAttendanceData.filter(r => r.check_in.startsWith(todayStr));
+    } else if (timeframe === 'weekly') {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filtered = allAttendanceData.filter(r => new Date(r.check_in) >= sevenDaysAgo);
+    } else if (timeframe === 'monthly') {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      filtered = allAttendanceData.filter(r => new Date(r.check_in) >= thirtyDaysAgo);
+    }
 
-    const cBody = document.getElementById('companyLogs');
-    cBody.innerHTML = '';
-    cachedLogs.forEach(l => {
-      cBody.innerHTML += `
+    let totalHrs = 0;
+    let completedCount = 0;
+    let underCount = 0;
+
+    const tbody = document.getElementById('reportsBody');
+    tbody.innerHTML = '';
+
+    filtered.forEach(r => {
+      const hrs = r.work_hours ? parseFloat(r.work_hours) : 0;
+      totalHrs += hrs;
+      if (r.completed_9h) completedCount++;
+      else if (r.work_hours && !r.completed_9h) underCount++;
+
+      tbody.innerHTML += `
         <tr>
-          <td><b>${l.user_email.split('@')[0]}</b></td>
-          <td>${new Date(l.check_in).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
-          <td>${new Date(l.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-          <td>${l.check_out ? new Date(l.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
-          <td>${l.work_hours ? l.work_hours + 'h' : 'Active'}</td>
-          <td>${l.completed_9h ? '<span class="pill pill-ok">9h+</span>' : '<span class="pill pill-warn">Under</span>'}</td>
+          <td><b>${r.user_email.split('@')[0]}</b></td>
+          <td>${new Date(r.check_in).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
+          <td>${new Date(r.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+          <td>${r.check_out ? new Date(r.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
+          <td><b>${r.work_hours ? r.work_hours + 'h' : 'Active'}</b></td>
+          <td>${r.completed_9h ? '<span class="pill pill-ok">9h+ Met</span>' : '<span class="pill pill-warn">Under</span>'}</td>
         </tr>`;
     });
 
-    const rBody = document.getElementById('rosterList');
-    rBody.innerHTML = '';
-    ADMIN_USERS.forEach(email => {
-      rBody.innerHTML += `
+    document.getElementById('repTotalShifts').innerText = filtered.length;
+    document.getElementById('repTotalHours').innerText = totalHrs.toFixed(1) + 'h';
+    document.getElementById('repCompleted9h').innerText = completedCount;
+    document.getElementById('repUnderhours').innerText = underCount;
+  }
+
+  // Export CSV
+  document.getElementById('btnExportCSV').addEventListener('click', () => {
+    let csv = "Employee,Date,Check In,Check Out,Work Hours,Completed 9h\n";
+    allAttendanceData.forEach(r => {
+      const inD = new Date(r.check_in);
+      const outD = r.check_out ? new Date(r.check_out) : null;
+      csv += `${r.user_email},"${inD.toLocaleDateString()}","${inD.toLocaleTimeString()}","${outD ? outD.toLocaleTimeString() : ''}",${r.work_hours || 0},${r.completed_9h ? 'YES' : 'NO'}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CodingLegends_Attendance_${currentReportFilter}.csv`;
+    a.click();
+  });
+
+  // ADMIN ROSTER & RESET PASSWORD (FIXED RPC)
+  async function loadAdminRoster() {
+    const { data: profiles } = await db.from('profiles').select('*');
+    const tbody = document.getElementById('adminRosterBody');
+    tbody.innerHTML = '';
+
+    STAFF.forEach(email => {
+      const p = profiles?.find(x => x.email === email);
+      const isDefault = p ? p.must_change_password : true;
+      tbody.innerHTML += `
         <tr>
-          <td>${email}</td>
+          <td><b>${email}</b></td>
           <td>Admin</td>
-          <td><button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="resetPwd('${email}')">Reset test123</button></td>
+          <td>${isDefault ? '<span class="pill pill-warn">Default (test123)</span>' : '<span class="pill pill-ok">Active Secure</span>'}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="resetStaffPassword('${email}')">
+              Reset to test123
+            </button>
+          </td>
         </tr>`;
     });
 
     // Populate HEHE Select
     if (user.email === HEHE_USER) {
       const select = document.getElementById('heheShiftSelect');
-      select.innerHTML = '<option value="">-- Choose Shift --</option>';
-      cachedLogs.forEach(l => {
+      select.innerHTML = '<option value="">-- Choose Shift to Edit --</option>';
+      allAttendanceData.forEach(l => {
         select.innerHTML += `<option value="${l.id}">${l.user_email.split('@')[0]} | ${new Date(l.check_in).toLocaleDateString()}</option>`;
       });
     }
   }
 
-  window.resetPwd = async (email) => {
-    await db.from('profiles').update({ must_change_password: true }).eq('email', email);
-    alert(`Reset flag triggered for ${email}`);
+  window.resetStaffPassword = async (email) => {
+    if (!confirm(`Reset ${email} password to test123?`)) return;
+
+    // Direct RPC Call: Alters auth.users and profiles atomically
+    const { data, error } = await db.rpc('admin_reset_user_password', { target_email: email });
+    if (error) {
+      alert("Error resetting password: " + error.message);
+    } else {
+      alert(`Success! ${email}'s password is now test123. They will be forced to change it upon login.`);
+      loadAdminRoster();
+    }
   };
 
-  // HEHE Event Handlers (Sahansa Exclusive)
+  // HEHE HANDLERS
   document.getElementById('heheShiftSelect').addEventListener('change', (e) => {
-    const r = cachedLogs.find(x => x.id === e.target.value);
+    const r = allAttendanceData.find(x => x.id === e.target.value);
     if (!r) return;
     document.getElementById('heheIn').value = r.check_in ? new Date(r.check_in).toISOString().slice(0, 16) : '';
     document.getElementById('heheOut').value = r.check_out ? new Date(r.check_out).toISOString().slice(0, 16) : '';
@@ -425,7 +542,7 @@
     const id = document.getElementById('heheShiftSelect').value;
     const inVal = document.getElementById('heheIn').value;
     const outVal = document.getElementById('heheOut').value;
-    if (!id || !inVal) return alert("Select shift and time");
+    if (!id || !inVal) return alert("Select shift and check-in time.");
 
     const inD = new Date(inVal);
     const outD = outVal ? new Date(outVal) : null;
@@ -438,33 +555,57 @@
       completed_9h: hours ? hours >= 9.0 : false
     }).eq('id', id);
 
-    if (error) alert("Error: " + error.message);
-    else {
-      alert("Updated successfully");
-      loadAnalytics();
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
+      alert("Timestamp updated successfully.");
+      loadReports('daily');
     }
   });
 
-  // Navigation Tabs Handlers
-  function switchTab(activeBtn, targetSection) {
-    document.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+  // NAVIGATION TAB SWITCHING
+  function switchTab(activeBtn, targetId) {
+    document.querySelectorAll('#navTabs .segmented-btn').forEach(b => b.classList.remove('active'));
     activeBtn.classList.add('active');
-    ['section-punch', 'section-analytics', 'section-hehe'].forEach(s => document.getElementById(s).classList.add('hidden'));
-    document.getElementById(targetSection).classList.remove('hidden');
+    ['section-punch', 'section-reports', 'section-admin', 'section-hehe'].forEach(id => {
+      document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById(targetId).classList.remove('hidden');
   }
 
   document.getElementById('tabPunch').addEventListener('click', (e) => switchTab(e.target, 'section-punch'));
-  document.getElementById('tabAnalytics').addEventListener('click', (e) => {
-    switchTab(e.target, 'section-analytics');
-    loadAnalytics();
+  document.getElementById('tabReports').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-reports');
+    loadReports('daily');
+  });
+  document.getElementById('tabAdmin').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-admin');
+    loadAdminRoster();
   });
   document.getElementById('tabHehe').addEventListener('click', (e) => {
     switchTab(e.target, 'section-hehe');
-    loadAnalytics();
+    loadAdminRoster();
   });
 
-  // Session Verification
-  async function checkUser() {
+  // REPORT FILTER SWITCHING
+  document.getElementById('btnRepDaily').addEventListener('click', (e) => {
+    document.querySelectorAll('#section-reports .segmented-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    loadReports('daily');
+  });
+  document.getElementById('btnRepWeekly').addEventListener('click', (e) => {
+    document.querySelectorAll('#section-reports .segmented-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    loadReports('weekly');
+  });
+  document.getElementById('btnRepMonthly').addEventListener('click', (e) => {
+    document.querySelectorAll('#section-reports .segmented-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    loadReports('monthly');
+  });
+
+  // SESSION STATE CONTROLLER
+  async function checkSession() {
     const { data: { session } } = await db.auth.getSession();
     const vAuth = document.getElementById('view-auth');
     const vPwd = document.getElementById('view-pwd');
@@ -473,6 +614,8 @@
 
     if (!session) {
       user = null;
+      activeShift = null;
+      clearInterval(timerId);
       vAuth.classList.remove('hidden');
       vPwd.classList.add('hidden');
       vMain.classList.add('hidden');
@@ -484,6 +627,8 @@
     lBtn.classList.remove('hidden');
 
     const { data: prof } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
+
+    // INTERCEPT: Force Password Change if Flagged
     if (prof?.must_change_password) {
       vAuth.classList.add('hidden');
       vMain.classList.add('hidden');
@@ -496,13 +641,11 @@
     vMain.classList.remove('hidden');
     document.getElementById('userTag').innerText = `${user.email.split('@')[0]} (Admin)`;
 
-    // Role-specific Tabs
-    document.getElementById('tabAnalytics').classList.remove('hidden');
     if (user.email === HEHE_USER) {
       document.getElementById('tabHehe').classList.remove('hidden');
     }
 
-    // Check Open Shift
+    // Restore Open Shift
     const { data: open } = await db.from('attendance').select('*').eq('user_id', user.id).is('check_out', null).maybeSingle();
     if (open) {
       activeShift = open;
@@ -511,10 +654,11 @@
     }
 
     startLocationWatcher();
-    loadUserLogs();
+    loadMyLogs();
+    loadReports('daily');
   }
 
-  checkUser();
+  checkSession();
 </script>
 </body>
 </html>
