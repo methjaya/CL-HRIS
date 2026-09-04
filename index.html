@@ -1,29 +1,822 @@
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer set search_path = public as $$
-declare
-  user_role text;
-begin
-  if new.email in (
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>TimeFlow • Coding Legends</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230071e3'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='-apple-system,BlinkMacSystemFont,sans-serif' font-weight='700' font-size='26' fill='%23ffffff'%3ECL%3C/text%3E%3C/svg%3E">
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card-bg: #ffffff;
+      --text: #1d1d1f;
+      --subtext: #86868b;
+      --border: rgba(0, 0, 0, 0.08);
+      --accent: #0071e3;
+      --danger: #ff3b30;
+      --success: #34c759;
+      --warning: #ff9500;
+      --input-bg: #f5f5f7;
+      --segmented-bg: rgba(118, 118, 128, 0.12);
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --card-bg: #1c1c1e;
+      --text: #f5f5f7;
+      --subtext: #8e8e93;
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #2997ff;
+      --input-bg: #2c2c2e;
+      --segmented-bg: rgba(118, 118, 128, 0.24);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px; transition: background 0.2s; }
+    
+    .container { width: 100%; max-width: 880px; }
+    .card { background: var(--card-bg); border-radius: 22px; border: 1px solid var(--border); padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 16px; }
+
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+    .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 7px; font-size: 11px; font-weight: 700; }
+
+    .segmented-control { display: inline-flex; background: var(--segmented-bg); padding: 3px; border-radius: 10px; gap: 2px; }
+    .segmented-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--subtext); cursor: pointer; transition: all 0.15s; }
+    .segmented-btn.active { background: var(--card-bg); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; }
+
+    .btn { padding: 10px 18px; border-radius: 11px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:active { opacity: 0.7; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--segmented-bg); color: var(--text); }
+    .btn-danger { background: var(--danger); color: #fff; }
+
+    .input-box { width: 100%; padding: 12px 14px; border-radius: 11px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 14px; outline: none; margin-bottom: 10px; }
+    .input-box:focus { border-color: var(--accent); }
+
+    .timer { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -1px; margin: 12px 0; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .pill-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+    .pill-bad { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
+    .pill-warn { background: rgba(255, 149, 0, 0.15); color: var(--warning); }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    @media(max-width: 650px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    .stat-box { background: var(--input-bg); padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
+    .stat-title { font-size: 12px; color: var(--subtext); }
+    .stat-num { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th { text-align: left; color: var(--subtext); padding: 10px; font-weight: 500; border-bottom: 1px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+
+    .hidden { display: none !important; }
+    .notice { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; }
+    .notice-err { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
+  </style>
+</head>
+<body data-theme="light">
+
+<div class="container">
+  <div class="card">
+    <div class="header">
+      <div class="brand">
+        <span class="badge">CL</span>
+        <span>Coding Legends</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="themeToggle" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">☀️</button>
+        <button id="logoutBtn" class="btn btn-secondary hidden" style="padding: 6px 12px; font-size: 12px;">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- 1. AUTH SCREEN -->
+    <div id="view-auth" style="max-width: 340px; margin: 24px auto; text-align: center;">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Portal Access</h2>
+      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Any <b>@codinglegends.io</b> email may sign in or register.<br>Default password: <b>test123</b></p>
+      <div id="authNotice" class="notice notice-err hidden"></div>
+
+      <input type="email" id="authEmail" class="input-box" placeholder="name@codinglegends.io" autocomplete="email">
+      <input type="password" id="authPassword" class="input-box" placeholder="Password" autocomplete="current-password">
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="loginBtn" class="btn btn-primary">Sign In</button>
+        <button id="setupBtn" class="btn btn-secondary">First-Time Registration</button>
+      </div>
+    </div>
+
+    <!-- 2. MANDATORY PASSWORD UPDATE -->
+    <div id="view-pwd" class="hidden" style="max-width: 340px; margin: 24px auto; text-align: center;">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">Update Password</h2>
+      <p style="font-size: 13px; color: var(--subtext); margin-bottom: 16px;">Set a new secure password to access your punch clock.</p>
+      <div id="pwdNotice" class="notice notice-err hidden"></div>
+
+      <input type="password" id="newPwd1" class="input-box" placeholder="New Password (min 6 chars)">
+      <input type="password" id="newPwd2" class="input-box" placeholder="Confirm Password">
+      <button id="savePwdBtn" class="btn btn-primary" style="width: 100%;">Set Password & Access</button>
+    </div>
+
+    <!-- 3. MAIN APPLICATION INTERFACE -->
+    <div id="view-main" class="hidden">
+      
+      <!-- Top Navigation Tabs -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div id="userTag" style="font-size: 13px; font-weight: 600;"></div>
+        <div class="segmented-control" id="navTabs">
+          <button class="segmented-btn active" id="tabPunch">Punch Clock</button>
+          <button class="segmented-btn hidden" id="tabReports">Reports</button>
+          <button class="segmented-btn hidden" id="tabAdmin">Admin</button>
+          <button class="segmented-btn hidden" id="tabHehe">HEHE</button>
+        </div>
+      </div>
+
+      <!-- TAB A: PUNCH CLOCK (ACCESSIBLE TO EMPLOYEES & ADMINS) -->
+      <div id="section-punch">
+        <div style="text-align: center; padding: 18px 0;">
+          <div id="geoPill" class="pill pill-warn">Checking location...</div>
+          <div id="timer" class="timer">00:00:00</div>
+          <div id="geoDist" style="font-size: 12px; color: var(--subtext); margin-bottom: 18px;">Office Perimeter: 200m</div>
+
+          <div style="display: flex; gap: 10px; justify-content: center; max-width: 320px; margin: 0 auto;">
+            <button id="btnIn" class="btn btn-primary" style="flex: 1;" disabled>Check In</button>
+            <button id="btnOut" class="btn btn-danger" style="flex: 1;" disabled>Check Out</button>
+          </div>
+        </div>
+
+        <h3 style="font-size: 14px; font-weight: 600; margin-top: 24px;">My Shift History (9h Day)</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
+            <tbody id="myLogs"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB B: REPORTS ENGINE (ADMINS ONLY) -->
+      <div id="section-reports" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div class="segmented-control">
+            <button class="segmented-btn active" id="btnRepDaily">Daily</button>
+            <button class="segmented-btn" id="btnRepWeekly">Weekly</button>
+            <button class="segmented-btn" id="btnRepMonthly">Monthly</button>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btnExportPDF" class="btn btn-primary" style="font-size: 12px; padding: 6px 14px;">↓ Export PDF</button>
+            <button id="btnExportCSV" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px;">↓ Export CSV</button>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="stat-box"><div class="stat-title">Period Logged Shifts</div><div class="stat-num" id="repTotalShifts">0</div></div>
+          <div class="stat-box"><div class="stat-title">Total Hours Worked</div><div class="stat-num" id="repTotalHours">0.0h</div></div>
+          <div class="stat-box"><div class="stat-title">Completed 9h Days</div><div class="stat-num" id="repCompleted9h" style="color:var(--success);">0</div></div>
+          <div class="stat-box"><div class="stat-title">Under-Hours Days</div><div class="stat-num" id="repUnderhours" style="color:var(--warning);">0</div></div>
+        </div>
+
+        <div style="overflow-x: auto; max-height: 380px;">
+          <table>
+            <thead><tr><th>Employee</th><th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Target (9h)</th></tr></thead>
+            <tbody id="reportsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB C: ADMIN & CREDENTIALS (ADMINS ONLY) -->
+      <div id="section-admin" class="hidden">
+        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Staff Account Security</h3>
+        <p style="font-size: 12px; color: var(--subtext); margin-bottom: 16px;">
+          Resetting an account sets their password back to <b>test123</b> and forces a password change upon entry.
+        </p>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead><tr><th>Employee</th><th>Role</th><th>Status</th><th>Security Action</th></tr></thead>
+            <tbody id="adminRosterBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB D: HEHE (SAHANSA EXCLUSIVE WORKSPACE) -->
+      <div id="section-hehe" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700;">HEHE Superuser Studio</h3>
+            <p style="font-size: 12px; color: var(--subtext);">Authorized exclusively to sahansa@codinglegends.io</p>
+          </div>
+          <!-- PURGE MY TEST DATA BUTTON -->
+          <button id="btnPurgeMyData" class="btn btn-danger" style="font-size: 12px; padding: 6px 14px;">
+            ⚠️ Reset All My Data
+          </button>
+        </div>
+
+        <!-- 1. MANUAL TIME ADJUSTMENTS -->
+        <h4 style="font-size: 14px; font-weight: 600; margin: 16px 0 8px 0;">Manual Timestamp Override</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 440px;">
+          <div>
+            <label style="font-size: 12px; color: var(--subtext);">Select Shift Record</label>
+            <select id="heheShiftSelect" class="input-box"></select>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--subtext);">Check In Time</label>
+            <input type="datetime-local" id="heheIn" class="input-box">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: var(--subtext);">Check Out Time</label>
+            <input type="datetime-local" id="heheOut" class="input-box">
+          </div>
+          <button id="heheSave" class="btn btn-primary" style="width: fit-content;">Save Adjustment</button>
+        </div>
+
+        <!-- 2. LOGIN AUDITS FOR ALL USERS -->
+        <h4 style="font-size: 14px; font-weight: 600; margin: 28px 0 8px 0;">Staff Login Audits</h4>
+        <p style="font-size: 12px; color: var(--subtext); margin-bottom: 8px;">Real-time authentication records across the team.</p>
+        <div style="overflow-x: auto; max-height: 250px;">
+          <table>
+            <thead><tr><th>Employee</th><th>Logged At</th><th>Device / Browser Agent</th></tr></thead>
+            <tbody id="auditLogsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // SUPABASE CLIENT
+  const SUPABASE_URL = "https://ssxbdhcbhhzqkqrajzin.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeGJkaGNiaGh6cWtxcmFqemluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MzUwNzUsImV4cCI6MjEwNDAxMTA3NX0.i0LDT9keH2Wf49MSlvXNtHsJhBKgOY3u9r9FllfiLMo";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const OFFICE_LAT = 6.907189302186722;
+  const OFFICE_LNG = 79.84985902959252;
+  const RADIUS = 200;
+  const DEFAULT_PWD = "test123";
+
+  // Designated Admins
+  const ADMIN_STAFF = [
     'david@codinglegends.io',
     'stefan@codinglegends.io',
     'azmeer@codinglegends.io',
     'vishwa@codinglegends.io',
     'sahansa@codinglegends.io'
-  ) then
-    user_role := 'admin';
-  else
-    user_role := 'employee';
-  end if;
+  ];
+  const HEHE_USER = 'sahansa@codinglegends.io';
 
-  insert into public.profiles (id, email, role, must_change_password)
-  values (new.id, new.email, user_role, true)
-  on conflict (id) do update set email = excluded.email;
+  let user = null;
+  let userProfile = null;
+  let activeShift = null;
+  let timerId = null;
+  let inBounds = false;
+  let allAttendanceData = [];
+  let currentReportFilter = 'daily';
 
-  return new;
-end;
-$$;
+  // THEME SWITCHER
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeToggle').innerText = isDark ? '🌙' : '☀️';
+  });
 
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
+  function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function startLocationWatcher() {
+    navigator.geolocation?.watchPosition(
+      (pos) => {
+        const dist = getDistance(pos.coords.latitude, pos.coords.longitude, OFFICE_LAT, OFFICE_LNG);
+        inBounds = dist <= RADIUS;
+        document.getElementById('geoDist').innerText = `Distance to Office: ${Math.round(dist)}m`;
+        
+        const pill = document.getElementById('geoPill');
+        pill.className = inBounds ? "pill pill-ok" : "pill pill-bad";
+        pill.innerText = inBounds ? `● In Office (${Math.round(dist)}m)` : `✕ Outside (${Math.round(dist)}m)`;
+
+        document.getElementById('btnIn').disabled = activeShift || !inBounds;
+        document.getElementById('btnOut').disabled = !activeShift || !inBounds;
+      },
+      () => {
+        document.getElementById('geoPill').innerText = "GPS Blocked";
+      },
+      { enableHighAccuracy: true }
+    );
+  }
+
+  function runClock() {
+    if (!activeShift) return document.getElementById('timer').innerText = "00:00:00";
+    const sec = Math.floor((new Date() - new Date(activeShift.check_in)) / 1000);
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+  }
+
+  async function logAuthAudit(email) {
+    try {
+      await db.from('login_audits').insert([{
+        user_email: email,
+        user_agent: navigator.userAgent
+      }]);
+    } catch(e) {
+      console.error("Audit error:", e);
+    }
+  }
+
+  // AUTH HANDLERS: Allow ANY @codinglegends.io email
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('authEmail').value.trim().toLowerCase();
+    const password = document.getElementById('authPassword').value;
+    const notice = document.getElementById('authNotice');
+    notice.classList.add('hidden');
+
+    if (!email.endsWith('@codinglegends.io')) {
+      notice.innerText = "Access restricted to @codinglegends.io domain.";
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    const { error } = await db.auth.signInWithPassword({ email, password });
+    if (error) {
+      notice.innerText = error.message;
+      notice.classList.remove('hidden');
+    } else {
+      await logAuthAudit(email);
+      checkSession();
+    }
+  });
+
+  document.getElementById('setupBtn').addEventListener('click', async () => {
+    const email = document.getElementById('authEmail').value.trim().toLowerCase();
+    const notice = document.getElementById('authNotice');
+    notice.classList.add('hidden');
+
+    if (!email.endsWith('@codinglegends.io')) {
+      notice.innerText = "Only @codinglegends.io accounts can be created.";
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    const { error } = await db.auth.signUp({ email, password: DEFAULT_PWD });
+    if (error && !error.message.includes("already registered")) {
+      notice.innerText = error.message;
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    const { error: signErr } = await db.auth.signInWithPassword({ email, password: DEFAULT_PWD });
+    if (signErr) {
+      notice.innerText = signErr.message;
+      notice.classList.remove('hidden');
+    } else {
+      await logAuthAudit(email);
+      checkSession();
+    }
+  });
+
+  document.getElementById('savePwdBtn').addEventListener('click', async () => {
+    const p1 = document.getElementById('newPwd1').value;
+    const p2 = document.getElementById('newPwd2').value;
+    const notice = document.getElementById('pwdNotice');
+    notice.classList.add('hidden');
+
+    if (p1.length < 6) {
+      notice.innerText = "Password must be at least 6 characters.";
+      notice.classList.remove('hidden');
+      return;
+    }
+    if (p1 === DEFAULT_PWD) {
+      notice.innerText = "New password cannot be test123.";
+      notice.classList.remove('hidden');
+      return;
+    }
+    if (p1 !== p2) {
+      notice.innerText = "Passwords do not match.";
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    const { error } = await db.auth.updateUser({ password: p1 });
+    if (error) {
+      notice.innerText = error.message;
+      notice.classList.remove('hidden');
+      return;
+    }
+
+    const role = ADMIN_STAFF.includes(user.email) ? 'admin' : 'employee';
+    await db.from('profiles').upsert({ id: user.id, email: user.email, role: role, must_change_password: false });
+    checkSession();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await db.auth.signOut();
+    checkSession();
+  });
+
+  // PUNCH IN/OUT
+  document.getElementById('btnIn').addEventListener('click', async () => {
+    const { data, error } = await db.from('attendance').insert([{
+      user_id: user.id,
+      user_email: user.email,
+      check_in: new Date().toISOString()
+    }]).select().single();
+
+    if (!error) {
+      activeShift = data;
+      clearInterval(timerId);
+      timerId = setInterval(runClock, 1000);
+      document.getElementById('btnIn').disabled = true;
+      document.getElementById('btnOut').disabled = false;
+      loadMyLogs();
+    }
+  });
+
+  document.getElementById('btnOut').addEventListener('click', async () => {
+    const now = new Date();
+    const diff = parseFloat(((now - new Date(activeShift.check_in)) / 36e5).toFixed(2));
+    const is9h = diff >= 9.0;
+
+    await db.from('attendance').update({
+      check_out: now.toISOString(),
+      work_hours: diff,
+      completed_9h: is9h
+    }).eq('id', activeShift.id);
+
+    activeShift = null;
+    clearInterval(timerId);
+    document.getElementById('timer').innerText = "00:00:00";
+    document.getElementById('btnIn').disabled = false;
+    document.getElementById('btnOut').disabled = true;
+    loadMyLogs();
+  });
+
+  async function loadMyLogs() {
+    const { data } = await db.from('attendance').select('*').eq('user_id', user.id).order('check_in', { ascending: false });
+    const tbody = document.getElementById('myLogs');
+    tbody.innerHTML = '';
+    data?.forEach(r => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${new Date(r.check_in).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
+          <td>${new Date(r.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+          <td>${r.check_out ? new Date(r.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
+          <td><b>${r.work_hours ? r.work_hours + 'h' : 'Active'}</b></td>
+          <td>${r.work_hours ? (r.completed_9h ? '<span class="pill pill-ok">9h+ Met</span>' : '<span class="pill pill-warn">Under 9h</span>') : '<span class="pill pill-warn">In Progress</span>'}</td>
+        </tr>`;
+    });
+  }
+
+  // REPORTS (ADMINS ONLY)
+  async function loadReports(timeframe = 'daily') {
+    currentReportFilter = timeframe;
+    const { data: all } = await db.from('attendance').select('*').order('check_in', { ascending: false });
+    allAttendanceData = all || [];
+
+    const now = new Date();
+    let filtered = allAttendanceData;
+
+    if (timeframe === 'daily') {
+      const todayStr = now.toISOString().split('T')[0];
+      filtered = allAttendanceData.filter(r => r.check_in.startsWith(todayStr));
+    } else if (timeframe === 'weekly') {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filtered = allAttendanceData.filter(r => new Date(r.check_in) >= sevenDaysAgo);
+    } else if (timeframe === 'monthly') {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      filtered = allAttendanceData.filter(r => new Date(r.check_in) >= thirtyDaysAgo);
+    }
+
+    let totalHrs = 0;
+    let completedCount = 0;
+    let underCount = 0;
+
+    const tbody = document.getElementById('reportsBody');
+    tbody.innerHTML = '';
+
+    filtered.forEach(r => {
+      const hrs = r.work_hours ? parseFloat(r.work_hours) : 0;
+      totalHrs += hrs;
+      if (r.completed_9h) completedCount++;
+      else if (r.work_hours && !r.completed_9h) underCount++;
+
+      tbody.innerHTML += `
+        <tr>
+          <td><b>${r.user_email.split('@')[0]}</b></td>
+          <td>${new Date(r.check_in).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
+          <td>${new Date(r.check_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+          <td>${r.check_out ? new Date(r.check_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--'}</td>
+          <td><b>${r.work_hours ? r.work_hours + 'h' : 'Active'}</b></td>
+          <td>${r.completed_9h ? '<span class="pill pill-ok">9h+ Met</span>' : '<span class="pill pill-warn">Under</span>'}</td>
+        </tr>`;
+    });
+
+    document.getElementById('repTotalShifts').innerText = filtered.length;
+    document.getElementById('repTotalHours').innerText = totalHrs.toFixed(1) + 'h';
+    document.getElementById('repCompleted9h').innerText = completedCount;
+    document.getElementById('repUnderhours').innerText = underCount;
+  }
+
+  // EXPORT CSV
+  document.getElementById('btnExportCSV').addEventListener('click', () => {
+    let csv = "Employee,Date,Check In,Check Out,Work Hours,Completed 9h\n";
+    allAttendanceData.forEach(r => {
+      const inD = new Date(r.check_in);
+      const outD = r.check_out ? new Date(r.check_out) : null;
+      csv += `${r.user_email},"${inD.toLocaleDateString()}","${inD.toLocaleTimeString()}","${outD ? outD.toLocaleTimeString() : ''}",${r.work_hours || 0},${r.completed_9h ? 'YES' : 'NO'}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CodingLegends_Attendance_${currentReportFilter}.csv`;
+    a.click();
+  });
+
+  // EXPORT PDF
+  document.getElementById('btnExportPDF').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(29, 29, 31);
+    doc.text("Coding Legends • Attendance Report", 14, 20);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(134, 134, 139);
+    doc.text(`Scope: ${currentReportFilter.toUpperCase()} | Generated: ${new Date().toLocaleString()}`, 14, 27);
+
+    const totalHrs = document.getElementById('repTotalHours').innerText;
+    const totalShifts = document.getElementById('repTotalShifts').innerText;
+    const completed9h = document.getElementById('repCompleted9h').innerText;
+
+    doc.setFillColor(245, 245, 247);
+    doc.roundedRect(14, 32, 182, 14, 3, 3, 'F');
+    doc.setFontSize(9);
+    doc.setTextColor(29, 29, 31);
+    doc.text(`Total Shifts: ${totalShifts}   |   Logged Time: ${totalHrs}   |   Completed 9h Days: ${completed9h}`, 18, 41);
+
+    const tableRows = [];
+    allAttendanceData.forEach(r => {
+      const inD = new Date(r.check_in);
+      const outD = r.check_out ? new Date(r.check_out) : null;
+      tableRows.push([
+        r.user_email.split('@')[0],
+        inD.toLocaleDateString(),
+        inD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        outD ? outD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Active',
+        r.work_hours ? `${r.work_hours}h` : 'In Progress',
+        r.completed_9h ? '9h+ Met' : (r.work_hours ? 'Under 9h' : 'Active')
+      ]);
+    });
+
+    doc.autoTable({
+      head: [['Employee', 'Date', 'Check In', 'Check Out', 'Hours', 'Status']],
+      body: tableRows,
+      startY: 50,
+      theme: 'plain',
+      styles: { font: 'helvetica', fontSize: 9, cellPadding: 4 },
+      headStyles: { fontStyle: 'bold', textColor: [134, 134, 139], fillColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [248, 248, 250] }
+    });
+
+    doc.save(`CodingLegends_Attendance_${currentReportFilter}.pdf`);
+  });
+
+  // ADMIN ROSTER (Shows all profiles from DB)
+  async function loadAdminRoster() {
+    const { data: profiles } = await db.from('profiles').select('*');
+    const tbody = document.getElementById('adminRosterBody');
+    tbody.innerHTML = '';
+
+    profiles?.forEach(p => {
+      const isDefault = p.must_change_password;
+      const isAdmin = p.role === 'admin';
+      tbody.innerHTML += `
+        <tr>
+          <td><b>${p.email}</b></td>
+          <td>${isAdmin ? '<span style="color:var(--accent); font-weight:600;">Admin</span>' : 'Employee'}</td>
+          <td>${isDefault ? '<span class="pill pill-warn">Default (test123)</span>' : '<span class="pill pill-ok">Active Secure</span>'}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="resetStaffPassword('${p.email}')">
+              Reset to test123
+            </button>
+          </td>
+        </tr>`;
+    });
+  }
+
+  window.resetStaffPassword = async (email) => {
+    if (!confirm(`Reset ${email} password to test123?`)) return;
+    const { error } = await db.rpc('admin_reset_user_password', { target_email: email });
+    if (error) {
+      alert("Error resetting password: " + error.message);
+    } else {
+      alert(`Success! ${email}'s password is now test123.`);
+      loadAdminRoster();
+    }
+  };
+
+  // HEHE SUPERUSER WORKSPACE LOAD
+  async function loadHeheWorkspace() {
+    const { data: all } = await db.from('attendance').select('*').order('check_in', { ascending: false });
+    allAttendanceData = all || [];
+
+    const select = document.getElementById('heheShiftSelect');
+    select.innerHTML = '<option value="">-- Choose Shift to Edit --</option>';
+    allAttendanceData.forEach(l => {
+      select.innerHTML += `<option value="${l.id}">${l.user_email.split('@')[0]} | ${new Date(l.check_in).toLocaleDateString()}</option>`;
+    });
+
+    const { data: audits } = await db.from('login_audits').select('*').order('logged_at', { ascending: false }).limit(50);
+    const auditBody = document.getElementById('auditLogsBody');
+    auditBody.innerHTML = '';
+    audits?.forEach(a => {
+      auditBody.innerHTML += `
+        <tr>
+          <td><b>${a.user_email}</b></td>
+          <td>${new Date(a.logged_at).toLocaleString()}</td>
+          <td style="font-size:11px; color:var(--subtext); max-width:300px; word-break:break-word;">${a.user_agent || 'Unknown'}</td>
+        </tr>`;
+    });
+  }
+
+  document.getElementById('heheShiftSelect').addEventListener('change', (e) => {
+    const r = allAttendanceData.find(x => x.id === e.target.value);
+    if (!r) return;
+    document.getElementById('heheIn').value = r.check_in ? new Date(r.check_in).toISOString().slice(0, 16) : '';
+    document.getElementById('heheOut').value = r.check_out ? new Date(r.check_out).toISOString().slice(0, 16) : '';
+  });
+
+  document.getElementById('heheSave').addEventListener('click', async () => {
+    if (user.email !== HEHE_USER) return alert("Unauthorized");
+    const id = document.getElementById('heheShiftSelect').value;
+    const inVal = document.getElementById('heheIn').value;
+    const outVal = document.getElementById('heheOut').value;
+    if (!id || !inVal) return alert("Select shift and check-in time.");
+
+    const inD = new Date(inVal);
+    const outD = outVal ? new Date(outVal) : null;
+    const hours = outD ? parseFloat(((outD - inD) / 36e5).toFixed(2)) : null;
+
+    const { error } = await db.from('attendance').update({
+      check_in: inD.toISOString(),
+      check_out: outD ? outD.toISOString() : null,
+      work_hours: hours,
+      completed_9h: hours ? hours >= 9.0 : false
+    }).eq('id', id);
+
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
+      alert("Timestamp updated successfully.");
+      loadReports('daily');
+    }
+  });
+
+  document.getElementById('btnPurgeMyData').addEventListener('click', async () => {
+    if (user.email !== HEHE_USER) return alert("Unauthorized.");
+    
+    if (!confirm("Are you sure you want to permanently delete ALL attendance records for sahansa@codinglegends.io? This cannot be undone.")) {
+      return;
+    }
+
+    const { data, error } = await db.rpc('purge_sahansa_attendance', { requester_email: user.email });
+    if (error) {
+      alert("Purge failed: " + error.message);
+    } else {
+      alert(data.message);
+      activeShift = null;
+      clearInterval(timerId);
+      document.getElementById('timer').innerText = "00:00:00";
+      loadMyLogs();
+      loadHeheWorkspace();
+    }
+  });
+
+  // NAVIGATION TABS
+  function switchTab(activeBtn, targetId) {
+    document.querySelectorAll('#navTabs .segmented-btn').forEach(b => b.classList.remove('active'));
+    activeBtn.classList.add('active');
+    ['section-punch', 'section-reports', 'section-admin', 'section-hehe'].forEach(id => {
+      document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById(targetId).classList.remove('hidden');
+  }
+
+  document.getElementById('tabPunch').addEventListener('click', (e) => switchTab(e.target, 'section-punch'));
+  document.getElementById('tabReports').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-reports');
+    loadReports('daily');
+  });
+  document.getElementById('tabAdmin').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-admin');
+    loadAdminRoster();
+  });
+  document.getElementById('tabHehe').addEventListener('click', (e) => {
+    switchTab(e.target, 'section-hehe');
+    loadHeheWorkspace();
+  });
+
+  document.getElementById('btnRepDaily').addEventListener('click', (e) => {
+    document.querySelectorAll('#section-reports .segmented-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    loadReports('daily');
+  });
+  document.getElementById('btnRepWeekly').addEventListener('click', (e) => {
+    document.querySelectorAll('#section-reports .segmented-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    loadReports('weekly');
+  });
+  document.getElementById('btnRepMonthly').addEventListener('click', (e) => {
+    document.querySelectorAll('#section-reports .segmented-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    loadReports('monthly');
+  });
+
+  // SESSION CONTROLLER: Role-based tab controls
+  async function checkSession() {
+    const { data: { session } } = await db.auth.getSession();
+    const vAuth = document.getElementById('view-auth');
+    const vPwd = document.getElementById('view-pwd');
+    const vMain = document.getElementById('view-main');
+    const lBtn = document.getElementById('logoutBtn');
+
+    if (!session) {
+      user = null;
+      activeShift = null;
+      clearInterval(timerId);
+      vAuth.classList.remove('hidden');
+      vPwd.classList.add('hidden');
+      vMain.classList.add('hidden');
+      lBtn.classList.add('hidden');
+      return;
+    }
+
+    user = session.user;
+    lBtn.classList.remove('hidden');
+
+    const { data: prof } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    userProfile = prof;
+
+    // Force Password Change if Flagged
+    if (prof?.must_change_password) {
+      vAuth.classList.add('hidden');
+      vMain.classList.add('hidden');
+      vPwd.classList.remove('hidden');
+      return;
+    }
+
+    vAuth.classList.add('hidden');
+    vPwd.classList.add('hidden');
+    vMain.classList.remove('hidden');
+
+    const isAdmin = ADMIN_STAFF.includes(user.email);
+    document.getElementById('userTag').innerText = `${user.email.split('@')[0]} (${isAdmin ? 'Admin' : 'Employee'})`;
+
+    // Unhide Admin Tabs if Admin
+    if (isAdmin) {
+      document.getElementById('tabReports').classList.remove('hidden');
+      document.getElementById('tabAdmin').classList.remove('hidden');
+    } else {
+      document.getElementById('tabReports').classList.add('hidden');
+      document.getElementById('tabAdmin').classList.add('hidden');
+    }
+
+    // Unhide HEHE Tab if Sahansa
+    if (user.email === HEHE_USER) {
+      document.getElementById('tabHehe').classList.remove('hidden');
+    } else {
+      document.getElementById('tabHehe').classList.add('hidden');
+    }
+
+    // Restore Open Shift
+    const { data: open } = await db.from('attendance').select('*').eq('user_id', user.id).is('check_out', null).maybeSingle();
+    if (open) {
+      activeShift = open;
+      clearInterval(timerId);
+      timerId = setInterval(runClock, 1000);
+    }
+
+    startLocationWatcher();
+    loadMyLogs();
+    if (isAdmin) loadReports('daily');
+  }
+
+  checkSession();
+</script>
+</body>
+</html>
